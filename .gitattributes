@@ -1,0 +1,2 @@
+# These scripts generate course illustrations and are not the Android app.
+tools/*.py -linguist-detectable
