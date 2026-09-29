@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="380" viewBox="0 0 1200 380" role="img" aria-labelledby="title desc">
+<title id="title">View 与 Compose 共存</title>
+<desc id="desc">迁移可以从一个控件开始。旧页面：XML / Fragment，现有页面照常运行；ComposeView：setContent，嵌入新区域；AndroidView：factory + update，复用旧控件；生命周期：进入与退出，清理监听和组合</desc>
+<rect width="1200" height="380" rx="28" fill="#F8FAFD"/>
+<text x="40" y="60" font-size="32" font-weight="700" fill="#202735" font-family="PingFang SC, Noto Sans CJK SC, sans-serif">12  View 与 Compose 共存</text>
+<text x="40" y="95" font-size="20" fill="#536174" font-family="PingFang SC, Noto Sans CJK SC, sans-serif">迁移可以从一个控件开始</text>
+<rect x="40" y="130" width="260" height="180" rx="20" fill="#E8F0FE" stroke="#4E74C8" stroke-width="2"/>
+<circle cx="70" cy="163" r="17" fill="#4E74C8"/>
+<text x="70" y="170" text-anchor="middle" font-size="19" font-weight="700" fill="white" font-family="Arial, sans-serif">1</text>
+<text x="60" y="205" font-size="22" font-weight="700" fill="#202735" font-family="PingFang SC, Noto Sans CJK SC, sans-serif">旧页面</text>
+<text x="60" y="248" font-size="21" fill="#202735" font-family="PingFang SC, Noto Sans CJK SC, sans-serif">XML / Fragment</text>
+<text x="60" y="281" font-size="17" fill="#536174" font-family="PingFang SC, Noto Sans CJK SC, sans-serif">现有页面照常运行</text>
+<path d="M306 220 L328 220 M320 212 L328 220 L320 228" stroke="#63758A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+<rect x="335" y="130" width="260" height="180" rx="20" fill="#E7F6EF" stroke="#288A63" stroke-width="2"/>
+<circle cx="365" cy="163" r="17" fill="#288A63"/>
+<text x="365" y="170" text-anchor="middle" font-size="19" font-weight="700" fill="white" font-family="Arial, sans-serif">2</text>
+<text x="355" y="205" font-size="22" font-weight="700" fill="#202735" font-family="PingFang SC, Noto Sans CJK SC, sans-serif">ComposeView</text>
+<text x="355" y="248" font-size="21" fill="#202735" font-family="PingFang SC, Noto Sans CJK SC, sans-serif">setContent</text>
+<text x="355" y="281" font-size="17" fill="#536174" font-family="PingFang SC, Noto Sans CJK SC, sans-serif">嵌入新区域</text>
+<path d="M601 220 L623 220 M615 212 L623 220 L615 228" stroke="#63758A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+<rect x="630" y="130" width="260" height="180" rx="20" fill="#FFF1DB" stroke="#B4771B" stroke-width="2"/>
+<circle cx="660" cy="163" r="17" fill="#B4771B"/>
+<text x="660" y="170" text-anchor="middle" font-size="19" font-weight="700" fill="white" font-family="Arial, sans-serif">3</text>
+<text x="650" y="205" font-size="22" font-weight="700" fill="#202735" font-family="PingFang SC, Noto Sans CJK SC, sans-serif">AndroidView</text>
+<text x="650" y="248" font-size="21" fill="#202735" font-family="PingFang SC, Noto Sans CJK SC, sans-serif">factory + update</text>
+<text x="650" y="281" font-size="17" fill="#536174" font-family="PingFang SC, Noto Sans CJK SC, sans-serif">复用旧控件</text>
+<path d="M896 220 L918 220 M910 212 L918 220 L910 228" stroke="#63758A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+<rect x="925" y="130" width="260" height="180" rx="20" fill="#F1EAFE" stroke="#8260A5" stroke-width="2"/>
+<circle cx="955" cy="163" r="17" fill="#8260A5"/>
+<text x="955" y="170" text-anchor="middle" font-size="19" font-weight="700" fill="white" font-family="Arial, sans-serif">4</text>
+<text x="945" y="205" font-size="22" font-weight="700" fill="#202735" font-family="PingFang SC, Noto Sans CJK SC, sans-serif">生命周期</text>
+<text x="945" y="248" font-size="21" fill="#202735" font-family="PingFang SC, Noto Sans CJK SC, sans-serif">进入与退出</text>
+<text x="945" y="281" font-size="17" fill="#536174" font-family="PingFang SC, Noto Sans CJK SC, sans-serif">清理监听和组合</text>
+<text x="40" y="350" font-size="16" fill="#607086" font-family="PingFang SC, Noto Sans CJK SC, sans-serif">阅读顺序：从左到右。先预测结果，再到模拟器里验证。</text>
+</svg>
