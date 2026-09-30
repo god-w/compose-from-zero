@@ -32,6 +32,24 @@ Composable 可能因状态变化再次执行。普通 `var count = 0` 每次执�
 
 状态变化 → Compose 安排重组 → 读取该状态的 Composable 更新。不要在绘制过程中写状态，尽量只在点击、输入等事件里写。
 
+## 先玩，再拆解
+
+![第 2 课在 Android 模拟器中点击三次后的实际画面](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/screenshots/02-running.png)
+
+这张实际运行截图显示计数为 3；你可以自己再旋转设备验证它是否保留。
+
+在 App 第 2 课点「先体验可操作示范」。不要急着写代码：先点三次 `+1`，读出数字；旋转模拟器，再读一次；点「清零」。真实示范用的是 `rememberSaveable`。接下来在自己的练习里分别试 `remember` 和 `rememberSaveable`，比较结果。
+
+## 三轮小实验
+
+1. **普通变量**：先在 `CounterExercise` 中写 `var count = 0`，显示 `Text("已点击 $count 次")`，按钮里 `count++`。先预测点击后屏幕会不会更新，再运行。局部变量不是可观察状态，Compose 不会因为它被改就刷新界面。
+2. **可观察状态**：改成 `var count by remember { mutableIntStateOf(0) }`。连续点击应显示 1、2、3。旋转设备前写下预测；旋转后观察它是否从 0 开始。
+3. **可恢复状态**：只把 `remember` 换成 `rememberSaveable`。再次点到 3 并旋转，数字应保持 3。最后加清零按钮，确认事件只在点击时修改状态。
+
+**对照表**：普通 `var` 不会触发更新；`remember` 能在当前组合中保持并触发更新；`rememberSaveable` 还会为可保存的值处理常见的 Activity 重建。它们不是数据库：强制停止后重新启动，不能拿这个计数器证明持久化。
+
+**卡住时检查**：`by` 报错先检查 `getValue`、`setValue` 导入；点击不变，检查按钮的 `onClick` 是否真正写回 `count`；旋转不符合预测，确认你替换的是同一个练习函数里的状态声明。
+
 ## 任务
 
 在 `CounterExercise` 中：

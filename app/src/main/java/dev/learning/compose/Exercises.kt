@@ -69,5 +69,5 @@ private fun EffectExercise() {
 @Composable
 private fun CapstoneExercise() {
     // TODO 07: 在这节整合输入、列表、过滤、状态提升与可访问性。
-    Text("07 · 在这里写毕业项目")
+    Text("07 · 在这里写阶段项目")
 }

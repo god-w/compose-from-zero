@@ -32,6 +32,25 @@
 
 `MainActivity.kt` 的 `setContent { MaterialTheme { Workshop() } }` 是入口。`Text` 是 Composable；`Column` 把子项竖排。每个 Composable 都可以拆成更小的 Composable。
 
+## 先在 App 里看真实效果
+
+![第 1 课在 Android 模拟器中运行的可操作示范](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/screenshots/01-running.png)
+
+这是从运行中的 Android 模拟器截取的实际画面；上面的蓝色手机图是目标设计示意。
+
+进入第 1 课，点「先体验可操作示范」。先盯着“我是小明”，预测点「切换传入的名字」后哪一行会变；点两次验证。这个页面是真正运行的 Compose 界面，目标图片只是设计示意。回到练习页时，你仍会看到 `TODO`，因为示范和你的代码互不代写。
+
+## 跟写实验：每次只改一点
+
+1. 在 `Exercises.kt` 找到 `GreetingExercise()` 和上方的 `0 -> GreetingExercise()`。先运行一次，确认它只显示占位文字。
+2. 把占位文字改成 `Text("你好，Compose！")`，运行。你刚写的 `Text` 会出现在练习区；如果仍是旧文字，确认运行的是 `app` 而不是只看设计图。
+3. 在函数参数处加入 `name: String`。此时调用处会报缺少参数；这是预期的编译提示。把调用改为 `GreetingExercise("小明")`，再运行。
+4. 加第二个 `Text("我是 $name")`。若要显示两行，把两个 `Text` 包在 `Column { ... }` 里。最后把“小明”换成你的名字，先预测，再运行。
+
+**你应该看到**：改调用处的名字后，只改变第二行；没有任何查找或修改 `TextView` 的代码。这里调用者给出输入，`GreetingExercise` 描述这个输入对应的 UI。
+
+**自己解释一次**：`@Composable` 标注的函数与普通返回字符串的函数有何不同？当 `name` 改变时，哪段代码决定了第二行的内容？
+
 ## 任务
 
 打开 `Exercises.kt` 的 `GreetingExercise`：
@@ -47,7 +66,7 @@
 
 ## 提示
 
-1. 参数写在函数名后：`private fun GreetingExercise(name: String)`。
+1. 参数写在函数名后：`private fun GreetingExercise(name: String)`；调用处也必须提供参数。
 2. 文本模板：`Text("我是 $name")`。
 
 <details><summary>参考实现（完成后再展开）</summary>

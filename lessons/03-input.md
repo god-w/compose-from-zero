@@ -32,6 +32,23 @@
 
 一个组件需要复用或由父组件控制时，把状态提升：`NameField(value, onValueChange)` 不自己持有名字；父组件保存并更新名字。这也使它更容易预览和测试。
 
+## 看一次真实的数据流
+
+![第 3 课在 Android 模拟器中输入 Compose 后的实际画面](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/screenshots/03-running.png)
+
+实际运行画面里，输入值和下方问候同步变化。下一步亲自删掉文字，观察空提示。
+
+在 App 第 3 课点「先体验可操作示范」。输入“阿青”，观察下方问候；逐字删除，再看空提示。现在在纸上画四个箭头：手指输入 → `onValueChange` → 父组件更新 `name` → 新的 `value` 回到输入框。不要画第二份 `name` 状态。
+
+## 分两次写，避免一下写完整页
+
+1. 先只在 `InputExercise` 里保存 `name`，放一个 `OutlinedTextField(value = name, onValueChange = { name = it })` 和显示问候的 `Text`。每输入一个字就验证下方是否同步变化；清空时显示“请输入名字”。
+2. 再把输入框抽成 `NameField(value: String, onValueChange: (String) -> Unit)`。父组件调用 `NameField(name, onValueChange = { name = it })`。子组件里不准再声明 `remember`；它只显示传入的值，并把新输入交还给父组件。
+
+**故意做坏再修好**：暂时把父组件回调改成 `{ }`，输入框会无法保持新字符。原因是事件到达了，却没有更新唯一的状态源。恢复 `{ name = it }`，确认输入恢复正常。
+
+**卡住时检查**：如果输入后下方文字变了、输入框却变空，检查 `OutlinedTextField` 的 `value` 是否仍来自同一个 `name`；如果旋转后丢字，确认父组件使用 `rememberSaveable`。
+
 ## 任务
 
 1. 在 `InputExercise` 保存名字，初始为空。

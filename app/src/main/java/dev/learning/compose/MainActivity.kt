@@ -24,6 +24,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -63,14 +64,19 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun Workshop() {
     var selected by rememberSaveable { mutableIntStateOf(-1) }
-    BackHandler(selected >= 0) { selected = -1 }
+    var showingShowcase by rememberSaveable { mutableStateOf(false) }
+    BackHandler(selected >= 0) {
+        if (showingShowcase) showingShowcase = false else selected = -1
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (selected < 0) "Compose 从零开始" else lessons[selected].first) },
+                title = { Text(if (showingShowcase) "${"%02d".format(selected + 1)} · 可操作示范" else if (selected < 0) "Compose 从零开始" else lessons[selected].first) },
                 navigationIcon = {
-                    if (selected >= 0) TextButton(onClick = { selected = -1 }) { Text("返回") }
+                    if (selected >= 0) TextButton(onClick = {
+                        if (showingShowcase) showingShowcase = false else selected = -1
+                    }) { Text("返回") }
                 }
             )
         }
@@ -82,10 +88,13 @@ private fun Workshop() {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 item {
-                    Text("按顺序读 lessons/ 中的讲义，再完成对应代码任务。01–07 修改 Exercises.kt；进阶课围绕阶段项目扩展。", style = MaterialTheme.typography.bodyLarge)
+                    Text("01–07：先体验可操作示范，再按讲义修改 Exercises.kt。进阶课围绕阶段项目扩展。", style = MaterialTheme.typography.bodyLarge)
                 }
                 itemsIndexed(lessons) { index, lesson ->
-                    Card(modifier = Modifier.fillMaxWidth().clickable { selected = index }) {
+                    Card(modifier = Modifier.fillMaxWidth().clickable {
+                        selected = index
+                        showingShowcase = false
+                    }) {
                         Column(Modifier.padding(20.dp)) {
                             Text(lesson.first, style = MaterialTheme.typography.titleMedium)
                             Text(lesson.second, style = MaterialTheme.typography.bodyMedium)
@@ -93,9 +102,16 @@ private fun Workshop() {
                     }
                 }
             }
+        } else if (showingShowcase) {
+            if (selected == 6) TaskShowcase(Modifier.fillMaxSize().padding(padding))
+            else if (selected in 0..2) FoundationShowcase(selected, Modifier.fillMaxSize().padding(padding))
+            else CoreShowcase(selected, Modifier.fillMaxSize().padding(padding))
         } else {
             Column(Modifier.fillMaxSize().padding(padding).padding(20.dp)) {
                 Text("阅读 lessons/${"%02d".format(selected + 1)}-*.md，按任务与验收步骤动手", style = MaterialTheme.typography.titleMedium)
+                if (selected in 0..6) {
+                    TextButton(onClick = { showingShowcase = true }) { Text("先体验可操作示范，再回来自己写 →") }
+                }
                 LessonVisual(selected)
                 Box(Modifier.weight(1f)) { PracticeScreen(selected) }
             }

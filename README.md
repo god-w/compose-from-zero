@@ -8,6 +8,10 @@
 
 这张是**完成第 07 课后的目标效果示意**，不是当前 `TODO` 练习的运行截图。每节讲义也有自己的目标画面；先看成果，再按问题一步步写出来。
 
+![第 07 课可操作示范在 Android 模拟器中的实际画面](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/screenshots/07-running.png)
+
+这张是**真实模拟器运行截图**。第 1–6 课讲义中也有真实截图，可与目标示意图对照。
+
 ## 再看原理图
 
 ![从 View 转向 Compose 的概念图](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/diagrams/01.png)
@@ -18,13 +22,15 @@
 
 1. 用 Android Studio 打开本目录，等待 Gradle Sync。需要 JDK 17、Android SDK 37 和联网下载依赖。
 2. 运行 `app` 到模拟器或真机。主页有 20 个课程入口。
-3. 在 App 首页打开第 1 课，点图放大：按箭头读图，先回答预测题，再看“三小步跟做”。
+3. 在 App 首页打开第 1 课，先体验可操作示范，再回练习页点图放大：按箭头读图，先回答预测题，再看“三小步跟做”。第 1–7 课均有可操作示范。
 4. 打开 [第 1 课讲义](lessons/01-first-composable.md)，修改 [`Exercises.kt`](app/src/main/java/dev/learning/compose/Exercises.kt) 中对应函数；每做完一小步就运行一次。
 5. 对照讲义的“停下来验收”检查结果；卡住时看“若结果不同”与提示，最后才看参考实现。
 
 命令行构建：`./gradlew :app:assembleDebug`。首次构建需要下载 Gradle 和 Maven 依赖。
 
 每节讲义都配有**目标界面示意图 + 原理流程图**：先看完成后会是什么样，再按问题写代码。目标图在 `assets/effects/`，原理图在 `assets/diagrams/`；App 内也能点击放大原理图。当前 Android Studio 的实验性 Compose Markdown 预览无法解析相对图片路径，因此讲义使用 GitHub 图片地址，在线阅读和 IDE 预览都能显示。若需离线预览，运行 `python3 tools/refresh_markdown_image_paths.py` 改为本机图片路径；上传改动前请运行 `python3 tools/refresh_markdown_image_paths.py --github` 恢复 GitHub 图片地址。
+
+第 1–7 课还有**真正运行的示范页**，可以输入、点击、旋转并验证预测。示范代码与 `Exercises.kt` 分开，你的练习不会被答案覆盖。建议先体验行为，再回讲义逐步写，完成验收后才读示范源码。
 
 ## 学习路线
 

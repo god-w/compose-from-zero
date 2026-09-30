@@ -32,6 +32,23 @@ Composable 函数体可能反复执行，因此不能直接 `while(true)`、订�
 
 把“从用户点击开始的动作”放在事件回调或事件处理协程中；把“页面存在期间需要运行的动作”放在合适的 effect 中。`DisposableEffect` 适合必须注册并注销的监听器。
 
+## 先看计时器，再自己写
+
+![第 6 课在 Android 模拟器中运行四秒后的计时器画面](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/screenshots/06-running.png)
+
+实际运行截图中计时器已增长到 4 秒。再点暂停、继续，验证你对 effect 生命周期的预测。
+
+在第 6 课可操作示范中停留三秒，确认数字增长；点暂停并等待两秒，确认数字不变；点继续，再等两秒。退出示范并重新进入，观察是否从 0 开始。先用这些现象推断：循环在哪里启动？暂停时旧循环去了哪里？
+
+## 按生命周期逐步实现
+
+1. 在 `EffectExercise` 先写 `var seconds by remember { mutableIntStateOf(0) }` 和一个显示秒数的 `Text`。没有循环时，数字应保持 0。
+2. 加 `LaunchedEffect(Unit)`，里面写 `while (true) { delay(1_000); seconds++ }`。运行并观察三秒。如果数字增长过快，检查是否把循环误放在 Composable 函数体。
+3. 返回首页，再进入。旧页面离开组合时协程取消，新页面从 0 开始。旋转时 `remember` 与 `rememberSaveable` 对数字的影响不同，但 effect 都会随新组合重新启动。
+4. 加 `running` 状态，用 `LaunchedEffect(running)`。只有 `running` 为真时循环；暂停时 key 变化，旧任务取消。恢复后继续当前秒数。
+
+**想一想**：如果每次重组都直接启动一个协程，点暂停时会有多少个循环需要处理？`LaunchedEffect` 把启动和取消都交给组合生命周期。
+
 ## 任务
 
 在 `EffectExercise`：
