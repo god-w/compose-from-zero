@@ -17,7 +17,7 @@ ANDROID_OUT.mkdir(parents=True, exist_ok=True)
 
 # Each diagram tells one small story. Keep labels short enough for a phone-width preview.
 DIAGRAMS = [
-    (1, "先改一行文字", "从找到代码，到看见运行结果", [("打开文件", "Exercises.kt", "先找到练习文件"), ("找到函数", "GreetingExercise", "第 1 课修改的位置"), ("改文字", 'Text("你好！")', "先只改引号里的内容"), ("运行 app", "进入第 1 课", "查看下方的练习区")]),
+    (1, "谁调用我的界面函数？", "入口建立组合，内容调用到练习区", [("Activity", "onCreate → setContent", "Android 启动页面"), ("课程外壳", "MaterialTheme", "内容里调用 Workshop"), ("选中第一课", "PracticeScreen(0)", "选择第 1 个练习"), ("你的代码", "GreetingExercise()", "描述练习区内容")]),
     (2, "状态驱动界面", "点击事件只修改状态", [("起点", "count = 0", "界面显示 0"), ("事件", "点击 +1", "onClick 执行"), ("状态", "count = 1", "Compose 观察到变化"), ("重组", "Text 读到 1", "界面显示 1")]),
     (3, "单向数据流", "数据向下，事件向上", [("父组件", "持有 name", "唯一可信来源"), ("向下传值", "NameField(value)", "子组件只显示"), ("用户输入", "onValueChange", "子组件报告事件"), ("向上更新", "父组件改 name", "新值再次传下")]),
     (4, "布局先看树", "再看 Modifier 的作用顺序", [("外层", "Row", "头像与文字横排"), ("左侧", "头像", "固定大小"), ("右侧", "Column", "姓名和副标题竖排"), ("修饰", "padding → background", "顺序影响可见范围")]),
@@ -167,10 +167,59 @@ def code_to_screen():
     canvas.save(OUT / "01-code-to-screen.png", optimize=True)
 
 
+def first_lesson_comparisons():
+    """Draw code comparisons with visible UI results, rather than just arrows."""
+    font_path = "/System/Library/Fonts/PingFang.ttc"
+    title = ImageFont.truetype(font_path, 34)
+    heading = ImageFont.truetype(font_path, 27)
+    body = ImageFont.truetype(font_path, 23)
+    small = ImageFont.truetype(font_path, 20)
+    code = ImageFont.truetype("/System/Library/Fonts/Menlo.ttc", 22)
+
+    canvas = Image.new("RGB", (1400, 820), "#F2F5FA")
+    draw = ImageDraw.Draw(canvas)
+    draw.text((40, 28), "同一个问候区域：从 View 写法过渡到 Compose", font=title, fill="#202735")
+    draw.text((40, 82), "用途对应 ≠ 内部实现相同。下面是代码与界面的教学示意。", font=small, fill="#536174")
+    for left, label, color, lines in [
+        (40, "你熟悉的 View", "#4E74C8", ["LinearLayout (vertical)", "    TextView", "    TextView", "", "setContentView(layout)", "nameView.text = value"]),
+        (720, "新的 Compose 表达", "#288A63", ["setContent { Greeting() }", "", "@Composable", "fun Greeting() {", "    Column {", "        Text(...)", "        Text(...)", "    }", "}"]),
+    ]:
+        draw.rounded_rectangle((left, 140, left + 640, 485), radius=22, fill="white", outline="#CFD9E7", width=2)
+        draw.text((left + 24, 157), label, font=heading, fill=color)
+        for index, line in enumerate(lines):
+            draw.text((left + 24, 208 + index * 28), line, font=code, fill="#202735")
+    draw.text((40, 510), "两种写法都可以表达这个区域", font=heading, fill="#202735")
+    draw.rounded_rectangle((40, 563, 655, 770), radius=20, fill="white", outline="#CFD9E7", width=2)
+    draw.text((74, 599), "你好，Compose！", font=title, fill="#345A9C")
+    draw.text((74, 666), "我是小明", font=heading, fill="#536174")
+    draw.text((720, 576), "View：加载层级，拿对象，设属性", font=body, fill="#4E74C8")
+    draw.text((720, 628), "Compose：调用组件，传值，描述内容", font=body, fill="#288A63")
+    draw.text((720, 698), "排列交给容器；文字内容交给文字组件。", font=small, fill="#536174")
+    canvas.save(OUT / "01-view-compose.png", optimize=True)
+
+    canvas = Image.new("RGB", (1400, 700), "#F2F5FA")
+    draw = ImageDraw.Draw(canvas)
+    draw.text((40, 28), "两次 Text 不一定是两行：先看父容器", font=title, fill="#202735")
+    draw.text((40, 83), "两侧使用同样的文字，没有添加间距；下方是局部布局示意。", font=small, fill="#536174")
+    for left, container, color in [(40, "Column", "#4E74C8"), (720, "Row", "#288A63")]:
+        draw.rounded_rectangle((left, 140, left + 640, 655), radius=22, fill="white", outline="#CFD9E7", width=2)
+        draw.text((left + 28, 161), container + ("：竖排" if container == "Column" else "：横排"), font=heading, fill=color)
+        for index, line in enumerate([container + " {", '    Text("你好")', '    Text("小明")', "}"]):
+            draw.text((left + 28, 219 + index * 36), line, font=body, fill="#202735")
+        draw.rounded_rectangle((left + 28, 405, left + 612, 587), radius=12, fill="#F2F5FA")
+        draw.text((left + 52, 430), "你好", font=heading, fill=color)
+        x = left + 52 if container == "Column" else left + 52 + int(draw.textlength("你好", font=heading))
+        y = 466 if container == "Column" else 430
+        draw.text((x, y), "小明", font=heading, fill=color)
+        draw.text((left + 28, 610), "先预测 → 运行验证 → 解释容器的作用", font=small, fill="#536174")
+    canvas.save(OUT / "01-layout-compare.png", optimize=True)
+
+
 for number, title, subtitle, steps in DIAGRAMS:
     (OUT / f"{number:02d}.svg").write_text(svg(number, title, subtitle, steps), encoding="utf-8")
     png(number, title, subtitle, steps)
     android_png(number, title, subtitle, steps)
 
 code_to_screen()
+first_lesson_comparisons()
 print(f"Generated {len(DIAGRAMS)} lesson diagrams for Markdown and Android")

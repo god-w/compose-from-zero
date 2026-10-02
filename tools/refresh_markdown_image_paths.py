@@ -30,11 +30,13 @@ for lesson in sorted((root / 'lessons').glob('[0-9][0-9]-*.md')):
     text = replace_image(text, f'第 {n} 课完成后的目标界面示意', 'effects', n)
     if n == '01':
         text = replace_image(text, 'Column 中两次 Text 调用与两行文字的对应关系', 'diagrams', '01-code-to-screen')
+        text = replace_image(text, 'View 与 Compose 描述同一个问候区域', 'diagrams', '01-view-compose')
+        text = replace_image(text, 'Column 和 Row 对同样两段文字的排列', 'diagrams', '01-layout-compare')
     lesson.write_text(text, encoding='utf-8')
 
 readme = root / 'README.md'
 text = readme.read_text(encoding='utf-8')
-text = replace_image(text, '第一课从定位代码到查看运行结果的图解', 'diagrams', '01')
+text = replace_image(text, '第一课从 Activity 到练习区的调用链图解', 'diagrams', '01')
 text = replace_image(text, '第 07 课任务清单的目标界面示意', 'effects', '07')
 readme.write_text(text, encoding='utf-8')
 print('Updated Markdown image paths for ' + ('GitHub' if use_github else 'this computer'))

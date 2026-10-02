@@ -88,7 +88,7 @@ private fun Workshop() {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 item {
-                    Text("01–07：先体验可操作示范，再按讲义修改 Exercises.kt。进阶课围绕阶段项目扩展。", style = MaterialTheme.typography.bodyLarge)
+                    Text("第 1 课先读讲义理解调用链，再修改 Exercises.kt。第 2–7 课可先体验示范；进阶课围绕阶段项目扩展。", style = MaterialTheme.typography.bodyLarge)
                 }
                 itemsIndexed(lessons) { index, lesson ->
                     Card(modifier = Modifier.fillMaxWidth().clickable {
@@ -110,7 +110,9 @@ private fun Workshop() {
             Column(Modifier.fillMaxSize().padding(padding).padding(20.dp)) {
                 Text("阅读 lessons/${"%02d".format(selected + 1)}-*.md，按任务与验收步骤动手", style = MaterialTheme.typography.titleMedium)
                 if (selected in 0..6) {
-                    TextButton(onClick = { showingShowcase = true }) { Text("先体验可操作示范，再回来自己写 →") }
+                    TextButton(onClick = { showingShowcase = true }) {
+                        Text(if (selected == 0) "完成静态练习后，体验名字切换示范 →" else "先体验可操作示范，再回来自己写 →")
+                    }
                 }
                 LessonVisual(selected)
                 Box(Modifier.weight(1f)) { PracticeScreen(selected) }

@@ -31,7 +31,8 @@ fun PracticeScreen(lesson: Int) {
 
 @Composable
 private fun GreetingExercise() {
-    // 第 1 小步：只把下面引号里的内容改成“你好，Compose！”，再运行 app。
+    // 先读第 1 章 1–6 节：理解 setContent 如何调用到这里，再开始下面的实验。
+    // 第 1 小步：改成“你好，Compose！”，先预测哪个区域会改变，再运行验证。
     // 第 2 小步：读讲义，用 Column 上下排列两个 Text。
     // 第 3 小步：再学习 name 参数；定义和调用要一起修改。
     Text("01 · 在这里写第一个 Composable")

@@ -3,7 +3,7 @@ package dev.learning.compose
 internal data class VisualGuide(val question: String, val steps: List<String>)
 
 internal val visualGuides = listOf(
-    VisualGuide("打开 Exercises.kt，找到 GreetingExercise。把 Text 引号里的文字改成“你好，Compose！”，运行后练习区会显示什么？", listOf("先只改 Text 引号里的文字，运行 app，再进入第 1 课查看下方练习区。", "读第一章第 2 步，用 Column 放两行 Text，运行后看它们怎样排列。", "前两步理解后，再按讲义一起修改函数参数和调用位置。")),
+    VisualGuide("为什么 GreetingExercise 没有返回 View，却能显示文字？只新增一个带 @Composable 注解的函数会自动显示吗？", listOf("先读第一章 1–6 节：从 XML 对照理解入口、调用链、组合、布局和绘制。", "按第 7 节改文字、交换两段 Text、把 Column 换成 Row；每次先预测，再运行。", "最后给函数添加 name 参数，同步修改调用处，并完成第 9 节的解释与迁移题。")),
     VisualGuide("如果在 Composable 内直接写 `var count = 0`，点三次按钮后屏幕会稳定显示 3 吗？", listOf("先写普通局部变量和按钮，亲眼观察它为何没有稳定更新。", "换成 `remember { mutableIntStateOf(0) }`，点三次并旋转。", "再换成 `rememberSaveable`，重复点击、旋转和清零。")),
     VisualGuide("输入一个字时，`NameField` 应该自己保存名字，还是只把新值通知父组件？", listOf("先画出父组件持有 `name`、子组件接收 `value` 的两层树。", "给子组件加 `value` 和 `onValueChange` 参数，暂时只显示输入框。", "在父组件回调中更新 `name`；输入、删除、旋转各试一次。")),
     VisualGuide("头像和姓名放在同一个 `Column` 会是什么排列？换成外层 `Row` 呢？", listOf("先只放三个带文字的占位块，观察 `Row` 和 `Column` 的方向。", "按图改成 `Row(头像, Column(姓名, 副标题))`。", "分别交换 `padding` 与 `background` 的顺序，截图比较背景覆盖范围。")),
