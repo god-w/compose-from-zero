@@ -4,7 +4,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 
 /**
- * 08–20 课围绕 07 的任务清单逐步扩展；先读对应讲义，再改 07 的实现。
+ * 08–11、16 课扩展或验证 07 的任务清单；先读对应讲义，再改 07 的实现。
+ * 12、17–19 课按讲义创建独立实验，并把入口加入下面的 when。
+ * 20 课独立实现习惯打卡应用。
  * 13–15 可先在下面的练习函数做小实验，然后迁移到任务清单。
  */
 @Composable
@@ -13,7 +15,7 @@ fun AdvancedPracticeScreen(lesson: Int) {
         12 -> AnimationExercise()
         13 -> GestureExercise()
         14 -> DrawingExercise()
-        else -> Text("第 ${lesson + 1} 课：按讲义扩展第 07 课的任务清单，并执行验收脚本。")
+        else -> Text("第 ${lesson + 1} 课：先读对应讲义的文件位置与接入步骤，再完成实验和验收。")
     }
 }
 

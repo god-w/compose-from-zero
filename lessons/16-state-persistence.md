@@ -1,62 +1,189 @@
-# 16 · 状态恢复与离线持久化
+# 16 · 恢复与 Room：旋转保留不等于长期保存
 
-**目标**：按数据寿命选择 `remember`、`rememberSaveable`、`ViewModel`、`SavedStateHandle` 和数据库。预计 2–3 小时；修改第 07/08 课的任务清单。
+**本章目标：**按数据寿命选择存放位置，把任务保存到数据库，并明确进程恢复实验。
 
-<!-- visual-start -->
-## 看图动手：先预测，再验证
+**学习顺序：**先理解原理和数据来源，再预测实验结果；每完成一个小步就运行一次，最后遮住解析完成验收。进阶章节列出的依赖只在学到该章时添加，现有课程 app 可以先正常运行。
 
-### 先看目标效果
+## 本章要做出的效果与核心路径
 
 ![第 16 课完成后的目标界面示意](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/effects/16.png)
 
-上图是**完成练习后的目标效果示意**，当前练习代码仍是留给你动手的占位内容。观察画面后，先回答下面的问题，再运行 App 比对。
+这是完成练习后的**目标效果示意**，不是当前占位练习的运行截图。先观察内容与操作，不要求像素级复制设计。
 
 ![第 16 课概念图](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/diagrams/16.png)
 
-**看图先猜**：旋转、杀进程、重新启动，哪种操作会让内存状态消失？先写下你的答案，运行后再对照。
+先用下面的解释看懂这条路径，再做分步实验。新增的界面对照图也会明确标为教学示意；真实截图另行标注。
+## 1. 先把三种实验分开
 
-**三小步跟做**：
-
-1. 先对当前任务清单依次做三种操作，记录丢失了什么。
-2. 只把筛选条件改为可恢复的小状态，重复实验。
-3. 最后把任务放入 Room，再次强制停止并启动。
-
-**停下来验收**：任务记录跨重启存在；筛选条件按设计恢复；能解释二者为何存放位置不同。
-
-**若结果不同**：如果任务只在旋转后还在、重启后消失，检查是否仍只存在 ViewModel 中。
-<!-- visual-end -->
-
-## 先做决策表
-
-| 数据 | 合适位置 | 原因 |
+| 操作 | 发生什么 | 主要验证 |
 | --- | --- | --- |
-| 卡片是否展开 | `rememberSaveable` | 小型界面状态，旋转后可恢复 |
-| 当前筛选条件 | `SavedStateHandle` 或 `rememberSaveable` | 恢复当前屏幕位置所需的小值 |
-| 任务记录 | Room/其他持久层 | 关机、进程结束后仍应存在 |
-| 当前网络请求 Job | ViewModel 的协程作用域 | 不需要写入磁盘 |
+| 旋转导致配置重建 | Activity 重建，进程通常还在 | ViewModel / 小状态恢复 |
+| 后台进程被系统回收后恢复任务 | 内存丢失，可能有系统保存信息 | SavedStateHandle / saved state |
+| 强制停止，再从图标启动 | 新的启动过程 | 磁盘数据，不能承诺原屏幕小状态恢复 |
 
-`rememberSaveable` 和 `SavedStateHandle` 通过 Bundle 保存少量恢复信息，不适合存大量任务。ViewModel 跨配置变化存活，但进程结束后会重建。数据库负责真正的持久化。
+第 7 章 Saver 是小列表教学。真实任务数量增长后，应放数据库；Bundle 只保存筛选、选中 id 等恢复所需的小值。
 
-## 跟做
+## 2. 准备依赖：文件位置必须分清
 
-1. 先记录现状：输入 3 条任务，旋转、后台杀进程、强制停止、重新启动。写下每一步哪些状态丢失。
-2. 让筛选条件用 `rememberSaveable` 保存；若已用 ViewModel，把它移入 `SavedStateHandle`。再次做旋转与进程恢复实验。
-3. 将任务数据放入 Room：定义 `TaskEntity(id, title, done)`、DAO 的查询/插入/更新/删除、Database；为 Room 添加官方当前稳定依赖及 KSP 配置。
-4. DAO 返回 `Flow<List<TaskEntity>>`；ViewModel 把它转换为 `TaskUiState`，UI 用 `collectAsStateWithLifecycle()` 观察。
-5. 不要把每次数据库写入放在 Composable 函数体；事件调用 ViewModel，由 `viewModelScope` 执行。
+本章沿用第 7–8 章模型和 UI。根目录 build.gradle.kts 的 plugins 加入：
 
-## 验收脚本
+```kotlin
+id("com.google.devtools.ksp") version "2.3.10" apply false
+id("androidx.room") version "2.8.5" apply false
+```
 
-1. 新增 A、B，完成 A；强制停止 App 再打开，两项及完成状态仍在。
-2. 筛选“未完成”，旋转屏幕后仍是“未完成”；若进程恢复行为与预期不同，能指出是保存机制还是导航作用域问题。
-3. 将 Room 查询人为延迟，UI 仍能显示加载或现有数据，不会因主线程阻塞而卡住。
+app/build.gradle.kts 的 plugins 加入相同 id、不重复版本；文件顶层添加 room 配置，dependencies 添加运行时和处理器：
 
-## 常见错误
+```kotlin
+// plugins 块内
+id("com.google.devtools.ksp")
+id("androidx.room")
 
-- 把整个 `TaskUiState` 塞进 `SavedStateHandle`，造成 Bundle 过大。
-- 在两个地方各维护一份可变任务列表，UI 与数据库逐渐不一致。
-- 每次重组都新建数据库实例或发起一次查询。
+// plugins / android / dependencies 块之外
+room { schemaDirectory("$projectDir/schemas") }
 
-**延伸**：做一次 schema 变更（新增 `createdAt`）并写迁移，旧安装上的任务必须保留。不要用 destructive migration 掩盖数据升级问题。
+// dependencies 块内
+implementation("androidx.room:room-runtime:2.8.5")
+implementation("androidx.room:room-ktx:2.8.5")
+ksp("androidx.room:room-compiler:2.8.5")
+```
 
-官方资料：[Compose 状态恢复](https://developer.android.com/develop/ui/compose/state-saving)、[Room](https://developer.android.com/training/data-storage/room)、[生命周期收集 Flow](https://developer.android.com/develop/ui/compose/state#use-other-types-of-state-in-jetpack-compose)。
+以上是插入位置示意，不是把三个片段原样合成一个裸文件。Sync 后先构建一次，确认 Room 处理器能运行，再写 UI。AGP 9 使用本项目已有内置 Kotlin 配置，不额外添加 kotlin-android 插件。
+
+## 3. 第一步：定义数据库边界
+
+新建 `TaskStorage.kt`，完整内容：
+
+```kotlin
+package dev.learning.compose
+
+import android.content.Context
+import androidx.room.*
+import kotlinx.coroutines.flow.Flow
+
+@Entity(tableName = "tasks")
+data class TaskEntity(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val title: String,
+    val done: Boolean = false
+)
+
+@Dao
+interface TaskDao {
+    @Query("SELECT * FROM tasks ORDER BY id")
+    fun observeAll(): Flow<List<TaskEntity>>
+    @Insert suspend fun insert(task: TaskEntity)
+    @Query("UPDATE tasks SET done = NOT done WHERE id = :id")
+    suspend fun toggle(id: Int)
+    @Query("DELETE FROM tasks WHERE id = :id")
+    suspend fun delete(id: Int)
+}
+
+@Database(entities = [TaskEntity::class], version = 1, exportSchema = true)
+abstract class TaskDatabase : RoomDatabase() {
+    abstract fun taskDao(): TaskDao
+}
+
+object TaskStorage {
+    @Volatile private var instance: TaskDatabase? = null
+    fun database(context: Context): TaskDatabase = instance ?: synchronized(this) {
+        instance ?: Room.databaseBuilder(context.applicationContext,
+            TaskDatabase::class.java, "learning-tasks.db").build().also { instance = it }
+    }
+}
+```
+
+Entity 是存储结构，Task 是 UI/业务模型。id 由数据库生成，不再自己用列表长度生成。DAO 的 Flow 报告表变化；UI 不需要手工刷新一份镜像列表。
+
+## 4. 第二步：让 ViewModel 观察唯一持久源
+
+新建 `StoredTaskViewModel.kt`：
+
+```kotlin
+package dev.learning.compose
+
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+
+class StoredTaskViewModel(application: Application, private val saved: SavedStateHandle)
+    : AndroidViewModel(application) {
+    private val dao = TaskStorage.database(application).taskDao()
+    val tasks = dao.observeAll().map { rows -> rows.map { Task(it.id, it.title, it.done) } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val filter = saved.getStateFlow("filter", 0)
+    fun setFilter(value: Int) { if (value in 0..2) saved["filter"] = value }
+    fun add(raw: String) {
+        val title = normalizedTitle(raw) ?: return
+        viewModelScope.launch { dao.insert(TaskEntity(title = title)) }
+    }
+    fun toggle(id: Int) { viewModelScope.launch { dao.toggle(id) } }
+    fun delete(id: Int) { viewModelScope.launch { dao.delete(id) } }
+}
+```
+
+这个类由 Activity 的默认 ViewModel 创建机制提供 Application 与 SavedStateHandle，不要在 UI 中手工 new。数据库写入可能失败，下一章会练习错误状态；当前样本先验证本地读写链。
+
+## 5. 第三步：接回原有无状态 UI
+
+把 CapstoneExercise 内的 model 类型替换为 StoredTaskViewModel，收集 tasks 和 filter：
+
+```kotlin
+val model: StoredTaskViewModel = viewModel()
+val tasks by model.tasks.collectAsStateWithLifecycle()
+val filter by model.filter.collectAsStateWithLifecycle()
+var input by rememberSaveable { mutableStateOf("") }
+TaskContent(tasks = tasks, input = input, filter = filter,
+    onInput = { input = it },
+    onAdd = { if (normalizedTitle(input) != null) { model.add(input); input = "" } },
+    onFilter = model::setFilter, onToggle = model::toggle, onDelete = model::delete)
+```
+
+这是函数体片段，使用前几章的导入。不要同时保留旧的 `var tasks`；数据源已经移到 DAO。
+
+![第 16 课实验界面对照](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/diagrams/16-experiment.png)
+
+教学示意比较强制停止后内存任务消失与 Room 记录恢复。筛选恢复和任务持久化分别验收。
+
+## 6. 按操作留证据
+
+1. 创建 A、B，完成 A，记下状态。
+2. 强制停止 app，再从图标启动，进入第 7 课；两项与完成状态应存在。
+3. 选择未完成再旋转，应保留筛选；不要要求强制停止后也恢复相同筛选。
+4. 后台进程恢复实验：先让 app 进后台，再使用系统/adb 的进程回收方式，返回最近任务；记录方法与结果。不要把 force-stop 的结果冒充此实验。
+
+DAO 初始 Flow 到达前，本例 emptyList 是初始占位；需要区分加载和真正空数据时，按下一章建模，不据此显示永久“空库”。
+
+## 7. 理解检查与 schema 迁移
+
+1. 为什么不把 10,000 条任务放 SavedStateHandle？
+2. UI 删除成功后为什么不再自己维护一份列表？
+3. 给表新增列，卸载重装成功是否证明迁移正确？
+
+<details><summary>解析</summary>
+
+1. Saved state 适合少量恢复信息，Bundle 大小和生命周期都不适合大量业务数据。
+2. DAO Flow 会发出新查询结果；维护第二份列表会出现不同步。
+3. 没有。卸载删掉旧数据库，迁移要在保留旧数据的安装上验证。
+
+</details>
+
+独立扩展：新增 createdAt 列，版本升到 2，写 Migration(1,2) 的 ALTER TABLE，并在 builder.addMigrations(...) 注册。不要用 destructive migration 掩盖升级问题。把生成的 app/schemas 提交版本控制。
+
+| 症状 | 检查 |
+| --- | --- |
+| Cannot find implementation | KSP 是否应用到 app，compiler 是否用 ksp 配置？ |
+| 强制停止后任务丢失 | 是否仍接的是内存 TaskViewModel？ |
+| 数据库越来越多 | 是否每次组合都创建不同文件或实例？ |
+| 改表后启动失败 | 版本、schema 与迁移是否匹配？ |
+
+验收：持久化脚本通过、筛选恢复正确、唯一任务源明确。官方核对：[Room](https://developer.android.com/training/data-storage/room)、[Room 版本](https://developer.android.com/jetpack/androidx/releases/room)、[KSP 配置](https://kotlinlang.org/docs/ksp-quickstart.html)、[保存 UI 状态](https://developer.android.com/develop/ui/compose/state-saving)。
+
+---
+
+上一章：[第 15 章](15-drawing-layout.md) · 下一章：[第 17 章](17-async-data.md)

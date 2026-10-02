@@ -1,61 +1,154 @@
-# 12 · 在已有 Android 项目中使用 Compose
+# 12 · View 互操作：旧页面怎样逐块迁移？
 
-**目标**：掌握渐进迁移：在 View 页面里放 Compose，在 Compose 里复用现有 View。预计 60–90 分钟。
+**本章目标：**用 AndroidView 与 ComposeView 理解边界、更新与清理，而不是整页重写。
 
-<!-- visual-start -->
-## 看图动手：先预测，再验证
+**学习顺序：**先理解原理和数据来源，再预测实验结果；每完成一个小步就运行一次，最后遮住解析完成验收。进阶章节列出的依赖只在学到该章时添加，现有课程 app 可以先正常运行。
 
-### 先看目标效果
+## 本章要做出的效果与核心路径
 
 ![第 12 课完成后的目标界面示意](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/effects/12.png)
 
-上图是**完成练习后的目标效果示意**，当前练习代码仍是留给你动手的占位内容。观察画面后，先回答下面的问题，再运行 App 比对。
+这是完成练习后的**目标效果示意**，不是当前占位练习的运行截图。先观察内容与操作，不要求像素级复制设计。
 
 ![第 12 课概念图](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/diagrams/12.png)
 
-**看图先猜**：已有 Fragment 只想迁移一小块 UI，必须整页重写吗？先写下你的答案，运行后再对照。
+先用下面的解释看懂这条路径，再做分步实验。新增的界面对照图也会明确标为教学示意；真实截图另行标注。
+## 1. 回到第一章的两种界面世界
 
-**三小步跟做**：
+你已经会 TextView，也知道 Text 接收数据。旧项目可能还有成熟的地图、广告或自定义 View。迁移可以先保持数据逻辑，只替换一块界面。
 
-1. 在旧页面找一个边界清楚的区域，先画出 View 与 Compose 的交界。
-2. 用 `ComposeView` 放一个静态文本，确认能显示。
-3. 再用 `AndroidView` 包装一个旧 View，并在状态变化时验证 `update` 被调用。
+| 宿主是谁？ | 接入工具 | 核心职责 |
+| --- | --- | --- |
+| Compose 页面要放 View | AndroidView | 创建 View，并把新状态应用到它 |
+| 传统 View 页面要放 Compose | ComposeView | 为局部区域建立组合入口 |
 
-**停下来验收**：新旧区域都能更新，退出页面后没有残留监听器或计时任务。
+数据只能有一个可信来源。不要让 EditText 和 Compose 输入框各自保存业务名字后再互相监听同步。
 
-**若结果不同**：如果旧 View 只显示初值，检查后续变化是否写在 `update` 而非只写在 `factory`。
-<!-- visual-end -->
+## 2. 实验 A：在当前项目放一个 TextView
 
-## 两个方向
-
-- **View → Compose**：在旧 XML 页面放 `ComposeView`，调用 `setContent { ... }`。Fragment 中应设置与 View 生命周期匹配的 composition strategy，避免销毁 View 后组合仍在。
-- **Compose → View**：用 `AndroidView(factory = { context -> LegacyView(context) }, update = { view -> ... })` 包装尚未迁移的控件。`factory` 创建，`update` 响应 Compose 状态变化。
-
-## 动手步骤
-
-1. 新建一个传统 `Activity` 或 `Fragment`，只把资料卡改成 `ComposeView`，其他 UI 保持 View。
-2. 从旧页面传 `name` 给 Composable；改变名字时确认界面更新。
-3. 在毕业项目中用 `AndroidView` 嵌入一个简单 `TextView`，让它显示任务总数；之后再替换回 `Text`。
-4. 给旧页面加一个 `EditText`，把输入值传给 `ComposeView`；更新后确认两个界面读的是同一份状态。
-
-## 验收
-
-- 旧页面可局部使用 Compose；关闭页面后没有继续运行的计时器或监听器。
-- `AndroidView` 中更新文本写在 `update`，而不是只在 `factory` 设置一次。
-- 能解释何时保留已有 View 更划算，何时迁移整个页面更简单。
-- 反复进入退出 Fragment 10 次，没有重复注册监听器或持续运行的副作用。
-
-## 提示
+无需新依赖。在包目录新建 `InteropExercise.kt`：
 
 ```kotlin
-AndroidView(
-    factory = { context -> TextView(context) },
-    update = { view -> view.text = "任务总数：$count" }
+package dev.learning.compose
+
+import android.widget.TextView
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.viewinterop.AndroidView
+
+@Composable
+fun InteropExercise() {
+    var count by remember { mutableIntStateOf(0) }
+    Column {
+        Button(onClick = { count++ }) { Text("+1") }
+        Text("Compose：$count")
+        AndroidView(
+            factory = { context -> TextView(context).apply { textSize = 20f } },
+            update = { view -> view.text = "View：$count" }
+        )
+    }
+}
+```
+
+在 AdvancedExercises.kt 的 when 新增 `11 -> InteropExercise()`，位于 else 前，进入第 12 课。**这里只是新的实验入口，不要修改主 Activity 的 Compose 外壳。**
+
+先预测再点击：两处都更新，因为它们读取同一个 count。factory 负责创建，update 负责应用当前数据，update 可以多次发生。
+
+### 故意做坏
+
+把赋文本移到 factory，并把 update 留空：
+
+```kotlin
+factory = { context -> TextView(context).apply { text = "View：$count" } },
+update = { }
+```
+
+点击后 Compose 文字改变，旧 View 可能仍是创建时的文本。恢复 update，解释为什么不能把每次更新的工作只写到创建阶段。
+
+![第 12 课实验界面对照](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/diagrams/12-experiment.png)
+
+教学示意显示相同 count 的两个界面；更新断开后会产生分歧。
+
+## 3. 实验 B：在传统 Activity 中建立 Compose 区域
+
+新建 `LegacyHostActivity.kt`。本例用代码建立 LinearLayout，不需要 XML：
+
+```kotlin
+package dev.learning.compose
+
+import android.os.Bundle
+import android.widget.Button
+import android.widget.LinearLayout
+import androidx.activity.ComponentActivity
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.ComposeView
+
+class LegacyHostActivity : ComponentActivity() {
+    private val name = mutableStateOf("小明")
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        root.addView(Button(this).apply {
+            text = "从旧 View 改名字"
+            setOnClickListener { name.value = "小红" }
+        })
+        root.addView(ComposeView(this).apply {
+            setContent { MaterialTheme { Text("你好，${name.value}") } }
+        })
+        setContentView(root)
+    }
+}
+```
+
+在 AndroidManifest.xml 的 application 内声明 `<activity android:name=".LegacyHostActivity" android:exported="false" />`。从已有 Compose 按钮启动它时，在 Composable 中取得 `LocalContext.current`，事件里 `context.startActivity(Intent(context, LegacyHostActivity::class.java))`。需要 android.content.Intent、androidx.compose.ui.platform.LocalContext 导入。
+
+先确认旧按钮与 Compose 文字共存，再点击检查更新。这个小样本的 name 是 Activity 内存状态，旋转会重建；若需恢复，用前几章学到的状态持有方案。
+
+## 4. Fragment 多一层 View 生命周期
+
+Activity 与 Fragment 的 View 生命周期不能混为一谈。在已有 Fragment 的 onCreateView / onViewCreated 中配置 ComposeView 时，常用：
+
+```kotlin
+composeView.setViewCompositionStrategy(
+    ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
 )
 ```
 
-在 Fragment 内创建 `ComposeView` 时按官方文档设置适合 View 生命周期的 `ViewCompositionStrategy`。迁移时先保持现有数据来源不变，只换一小块 UI，便于比较行为。
+导入 `androidx.compose.ui.platform.ViewCompositionStrategy`。这段作用于你已有的 composeView，不是要本项目额外引入 Fragment 框架。销毁 Fragment View 时组合应被清理；重新创建 View 时重新建立。
 
-官方资料：[Compose 与 View 互操作](https://developer.android.com/develop/ui/compose/migrate/interoperability-apis)。
+涉及 View 监听器时，应明确注册与注销；若使用 AndroidView 的 onRelease 清理回调，按该 overload 文档选择，别把整个组合的清理和 View 复用混成一件事。
 
-第 20 课会用一个新的“习惯打卡”应用检验独立交付能力。
+## 5. 理解检查
+
+1. AndroidView 的 update 会创建新 TextView 吗？
+2. 旧按钮修改普通 String 变量，Compose 一定感知吗？
+3. 为什么 Fragment 不能只考虑 Fragment 实例是否还在？
+
+<details><summary>解析</summary>
+
+1. 创建主要在 factory；update 把数据应用给已有实例。
+2. 不一定。本例使用可观察状态，普通变量没有同等通知能力。
+3. Fragment 实例可能仍在，但它的 View 已销毁；组合资源要匹配 View 生命周期。
+
+</details>
+
+## 6. 验收、迁移、排错
+
+独立把传统 TextView 换成你熟悉的一个自定义 View，保持 factory 创建、update 更新的边界。若注册监听，记录退出后如何清理。
+
+| 现象 | 检查 |
+| --- | --- |
+| View 只显示初值 | 状态更新是否只写在 factory？ |
+| 旧按钮点击后 Compose 不变 | 修改的值是否可观察，是否同一份数据？ |
+| Activity 无法打开 | Manifest 是否声明，Intent 是否指向正确类？ |
+| 多次进入出现重复回调 | 监听注册与注销是否成对？ |
+
+完成标准：两个方向都能解释，至少 AndroidView 实验亲手运行；已有 Fragment 场景按 View 生命周期清理。官方核对：[Compose 中放 View](https://developer.android.com/develop/ui/compose/migrate/interoperability-apis/views-in-compose)、[View 中放 Compose](https://developer.android.com/develop/ui/compose/migrate/interoperability-apis/compose-in-views)。
+
+---
+
+上一章：[第 11 章](11-quality.md) · 下一章：[第 13 章](13-animation.md)

@@ -1,95 +1,82 @@
-# 05 · 列表与 key
+# 05 · 列表与 key：位置变了，身份变了吗？
 
-**目标**：写可增删的懒加载列表，理解项目身份与不可变状态更新。预计 75 分钟。
+**本章目标：**用 LazyColumn 显示可删除列表，理解可观察列表和稳定身份。
 
-<!-- visual-start -->
-## 看图动手：先预测，再验证
+**学习顺序：**先理解原理和数据来源，再预测实验结果；每完成一个小步就运行一次，最后遮住解析完成验收。进阶章节列出的依赖只在学到该章时添加，现有课程 app 可以先正常运行。
 
-### 先看目标效果
+## 本章要做出的效果与核心路径
 
 ![第 05 课完成后的目标界面示意](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/effects/05.png)
 
-上图是**完成练习后的目标效果示意**，当前练习代码仍是留给你动手的占位内容。观察画面后，先回答下面的问题，再运行 App 比对。
+这是完成练习后的**目标效果示意**，不是当前占位练习的运行截图。先观察内容与操作，不要求像素级复制设计。
 
 ![第 05 课概念图](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/diagrams/05.png)
 
-**看图先猜**：A、B、C 删除 A 后，原来下标 1 的 B 变成下标几？它的身份是否改变？先写下你的答案，运行后再对照。
+先用下面的解释看懂这条路径，再做分步实验。新增的界面对照图也会明确标为教学示意；真实截图另行标注。
+## 1. 从 RecyclerView 迁移已有认识
 
-**三小步跟做**：
+RecyclerView 让可见区域按需展示项目。LazyColumn 也用于按需组合和布局列表内容。你描述 items，不再写 Adapter 和 ViewHolder；但“列表数据”“项目身份”“项目状态”仍需自己设计。
 
-1. 先做只显示三项的 `LazyColumn`，每项显示 `id` 和标题。
-2. 用稳定 `id` 作为 `key`，加入删除 A 的按钮。
-3. 给 B 加可观察的局部状态，删除 A 后确认状态仍跟着 B。
+普通 Column 加循环适合小量内容；大量可滚动条目用 LazyColumn。不要给 LazyColumn 再套同方向、无限高度的滚动容器。
 
-**停下来验收**：B 的位置变了，但 `id` 与它自己的状态没有错配。
+## 2. 先辨认三种编号
 
-**若结果不同**：如果删除后状态跑到别的行，检查是否用了下标当 key。
-<!-- visual-end -->
+| 值 | 含义 | 删除第一项后 |
+| --- | --- | --- |
+| 下标 index | 现在位于第几个位置 | 后面的项目会移动 |
+| 业务 id | 哪个任务 | 幸存项目保持不变 |
+| Lazy key | 组合追踪项目使用的身份 | 应与稳定业务身份对应 |
 
-## 讲解
+A、B、C 的 id 分别是 10、20、30。删除 A，B 位置从 1 到 0，id 仍为 20。稳定 key 帮助列表把状态与项目对应。它不是持久化，也不保证业务 id 自动生成。
 
-`LazyColumn` 只组合可见区域附近的内容，适合长列表。`items(list, key = { it.id })` 给每项稳定身份；没有稳定 key 时，插入或删除可能让项内部状态跟错位置。状态更新不要原地改普通 `MutableList`；用新的列表值替换，Compose 才容易观察。
+## 3. 写一个只显示、不修改的列表
 
-## 先体验“位置”和“身份”的区别
-
-![第 5 课在 Android 模拟器中删除 A 后，B 仍保持勾选的实际画面](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/screenshots/05-running.png)
-
-这张实际运行截图是“勾选 B → 删除 A”后的结果。B 位置变了，勾选没有错位。
-
-在第 5 课可操作示范中，先勾选 B，再删除 A。B 从第二行移到第一行，但勾选仍属于 B。看源码前先说出：B 的下标变了，哪个值没有变？答案应是任务 ID。示范用 `items(ids, key = { it })` 把这份身份交给列表。
-
-## 从静态列表走到增删
-
-1. 在 `ListExercise` 先创建三条固定任务，只显示标题。运行后确认 A、B、C 的顺序。
-2. 给每条任务独立的 `id`，把显示改成 `items(tasks, key = { it.id })`。标题是可见内容，`id` 是身份；两条任务即使同名，也不该共用 ID。
-3. 加“删除”回调，先只删 A。观察 B、C 前移但内容不变。然后添加按钮，让 `nextId` 单调增加；删除一项后添加新项，不要拿旧位置当新 ID。
-4. 最后加空状态。先删光任务，确认你看到提示而不是空白屏幕。
-
-**故意做坏再修**：暂时去掉 `key`，给行加 `remember` 勾选状态，再删第一项。若勾选跑到另一项，说明状态跟了位置。恢复稳定 ID 的 key。
-
-**一个关键区分**：示范页为了突出 key，在行内放局部勾选状态；真正的任务是否完成属于业务数据，在第 7 课应放在任务模型和列表状态源中。
-
-## 任务
-
-在 `ListExercise`：
-
-1. 定义 `data class Task(val id: Int, val title: String)`。
-2. 保存列表和下一个 id；按钮每次添加“任务 N”。
-3. 用 `LazyColumn` 展示；每行有标题和删除按钮。`items(..., key = { it.id })`。
-4. 尝试先增加 3 项，再删中间项，检查其他项稳定。
-
-## 验收
-
-- 添加和删除结果正确；列表为空时有空状态文字。
-- 能解释为什么不能用列表下标当稳定 key。
-
-## 提示
-
-1. `var tasks by remember { mutableStateOf(emptyList<Task>()) }`；`tasks = tasks + Task(nextId++, ...)`。
-2. 删除：`tasks = tasks.filterNot { it.id == task.id }`。
-
-<details><summary>参考实现</summary>
+修改 `Exercises.kt` 的 `ListExercise`，新增：
 
 ```kotlin
-private data class Task(val id: Int, val title: String)
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+```
 
+在文件顶层添加本章模型，不要放到 Composable 函数体里：
+
+```kotlin
+private data class ListTask(val id: Int, val title: String)
+```
+
+```kotlin
 @Composable
 private fun ListExercise() {
-    var tasks by remember { mutableStateOf(emptyList<Task>()) }
-    var nextId by remember { mutableIntStateOf(1) }
-    Column {
-        Button(onClick = {
-            tasks = tasks + Task(nextId, "任务 $nextId")
-            nextId++
-        }) { Text("添加任务") }
-        if (tasks.isEmpty()) Text("暂无任务")
-        LazyColumn {
-            items(tasks, key = { it.id }) { task ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(task.title, modifier = Modifier.weight(1f))
-                    TextButton(onClick = { tasks = tasks.filterNot { it.id == task.id } }) {
-                        Text("删除")
-                    }
+    val tasks = listOf(ListTask(10, "A"), ListTask(20, "B"), ListTask(30, "C"))
+    LazyColumn {
+        items(tasks, key = { it.id }) { task ->
+            Text("${task.id} · ${task.title}")
+        }
+    }
+}
+```
+
+先运行并确认三项，不急着添加按钮。这里的 items 来自 `foundation.lazy.items`，不是 Row/Column 的普通内容 API。
+
+## 4. 第二步：只加入删除
+
+```kotlin
+@Composable
+private fun ListExercise() {
+    var tasks by remember {
+        mutableStateOf(listOf(ListTask(10, "A"), ListTask(20, "B"), ListTask(30, "C")))
+    }
+    LazyColumn {
+        items(tasks, key = { it.id }) { task ->
+            Column {
+                Text("${task.id} · ${task.title}")
+                Button(onClick = { tasks = tasks.filterNot { it.id == task.id } }) {
+                    Text("删除 ${task.title}")
                 }
             }
         }
@@ -97,8 +84,58 @@ private fun ListExercise() {
 }
 ```
 
-这里为突出列表行为使用 `remember`。若要在 Activity 重建后保存整个列表，可在后续课程学习 `ViewModel` 或自定义 `Saver`。
+先预测：删 A 后，B 的文字会变成 `10 · B` 吗？不会。你更换列表值，Compose 观察该值；每项数据里的 id 不随位置变。
+
+不要使用 `remember { mutableListOf(...) }` 后直接 remove 来期待 UI 自动更新。本例使用 `State<List<...>>` 配合新的列表值；另一种方案是可观察的 `mutableStateListOf`，不要混淆普通列表与可观察列表。
+
+## 5. 第三步：让身份问题变得可见
+
+给每项加一个独立计数。需新增 `mutableIntStateOf` 导入，在 items 内容里先写：
+
+```kotlin
+var taps by remember { mutableIntStateOf(0) }
+Column {
+    Text("${task.title}：局部点击 $taps 次")
+    Button(onClick = { taps++ }) { Text("点 ${task.title}") }
+    Button(onClick = { tasks = tasks.filterNot { it.id == task.id } }) { Text("删除") }
+}
+```
+
+把 B 点到 2，再删 A，B 应仍为 2。现在临时移除 key，从初始数据重新运行重复操作，观察局部状态是否按位置错配；具体可见表现还与组合结构有关。恢复稳定 key，不依赖无 key 版本的偶然表现。
+
+![第 05 课实验界面对照](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/diagrams/05-experiment.png)
+
+这是身份实验示意，关注 B 移动后的归属。key 需要在同一列表里唯一；本例 Int 也适合后续可保存状态的身份使用。
+
+![第 5 课真实模拟器画面](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/screenshots/05-running.png)
+
+## 6. 先回答再看解析
+
+1. 用标题作 key 会有什么风险？
+2. `tasks = tasks.filterNot { ... }` 为什么会更新？
+3. 稳定 key 能让任务在强制停止后还存在吗？
+
+<details><summary>答案</summary>
+
+1. 标题可能重复，也可能被编辑；身份会冲突或变化。用稳定、唯一的业务 id。
+2. tasks 是可观察状态容器的值；赋新列表值触发相应更新。
+3. 不能。key 解决列表内容的身份对应，磁盘持久化另有机制。
 
 </details>
 
-**变式**：给每项加完成状态和 `Checkbox`，用 `map` 生成更新后的列表。
+## 7. 迁移任务与排错
+
+增加“添加”按钮，每次生成新的、未被使用的 id。不要用 `tasks.size` 当 id：删除后再添加可能重复。内存实验可以单调递增计数；长期数据交给数据库或合适的 ID 策略。
+
+| 现象 | 检查 |
+| --- | --- |
+| 删除后界面不变 | 是否改了普通可变列表而没有可观察更新？ |
+| 项目状态跑到别人身上 | key 是否用下标或发生重复？ |
+| 无限高度约束报错 | LazyColumn 上层是否同方向无限滚动？ |
+| 旋转后列表回到初始值 | 本章使用 remember；第 7、16 章补恢复和持久化 |
+
+完成标准：删除、添加、身份实验都通过；能分别解释位置、id、key。官方核对：[Lazy 列表与 key](https://developer.android.com/develop/ui/compose/lists)。
+
+---
+
+上一章：[第 04 章](04-layout.md) · 下一章：[第 06 章](06-effects.md)

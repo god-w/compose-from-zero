@@ -1,79 +1,149 @@
-# 08 · 状态持有者与架构
+# 08 · ViewModel 与 StateFlow：让界面只负责呈现
 
-**目标**：把阶段项目的界面状态与业务操作分开，理解 `ViewModel`、`StateFlow`、生命周期收集。预计 90–120 分钟。直接扩展第 07 课的任务清单。
+**本章目标：**沿用第 7 章 Task 与 TaskContent，将屏幕业务规则迁入 ViewModel。
 
-<!-- visual-start -->
-## 看图动手：先预测，再验证
+**学习顺序：**先理解原理和数据来源，再预测实验结果；每完成一个小步就运行一次，最后遮住解析完成验收。进阶章节列出的依赖只在学到该章时添加，现有课程 app 可以先正常运行。
 
-### 先看目标效果
+## 本章要做出的效果与核心路径
 
 ![第 08 课完成后的目标界面示意](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/effects/08.png)
 
-上图是**完成练习后的目标效果示意**，当前练习代码仍是留给你动手的占位内容。观察画面后，先回答下面的问题，再运行 App 比对。
+这是完成练习后的**目标效果示意**，不是当前占位练习的运行截图。先观察内容与操作，不要求像素级复制设计。
 
 ![第 08 课概念图](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/diagrams/08.png)
 
-**看图先猜**：点击一项后，哪一层应该决定新任务列表：行组件还是状态持有者？先写下你的答案，运行后再对照。
+先用下面的解释看懂这条路径，再做分步实验。新增的界面对照图也会明确标为教学示意；真实截图另行标注。
+## 1. 先判断为什么需要迁移
 
-**三小步跟做**：
+任务数据会被列表、详情和持久层共同使用。把业务更新集中在屏幕状态持有者里，便于复用和测试。不是因为“Composable 不能持有任何状态”：局部草稿、展开状态仍可留在合适的 UI 层。
 
-1. 先保留现有 UI，只把 `TaskRow` 改为接收值与事件。
-2. 把添加、完成、删除逻辑逐个移入 ViewModel；每迁移一项就运行。
-3. 观察一次点击如何经过回调、StateFlow，再回到 UI。
+本章先保持单模块、内存数据。ViewModel 能跨配置变化存活，不能自动跨进程结束；第 16 章解决后者。
 
-**停下来验收**：`TaskRow` 不知道 ViewModel；业务方法可单独调用和测试。
+## 2. 把新名词接到已有概念
 
-**若结果不同**：如果 UI 没更新，检查是否发出了新的状态值并在界面按生命周期收集。
-<!-- visual-end -->
+| 名词 | 可以先这样理解 | 不负责什么 |
+| --- | --- | --- |
+| UiState | 一份当前屏幕数据快照 | 不直接画界面 |
+| MutableStateFlow | 状态持有者可写的数据流 | 不自动成为 Compose State |
+| StateFlow | UI 读取的只读视图 | 不让调用者任意改业务状态 |
+| collectAsStateWithLifecycle | 把 Flow 的值接入 UI，并按生命周期收集 | 不把数据库自动保存起来 |
 
-## 为什么要迁移
+改变列表时发出新值。修改同一个普通 List 内部对象，再重复发相等状态，可能无法产生预期更新。
 
-前几课把状态放在 Composable 里，适合局部界面状态。任务列表属于屏幕级数据：旋转后要保留、将来可能来自数据库。此时让 `ViewModel` 持有状态，Composable 只负责读取状态、发送事件。`ViewModel` 可跨配置更改存活，但**不能自动跨进程死亡**；持久保存请用数据库，少量可恢复值可用 `SavedStateHandle`。
+## 3. 文件与依赖
 
-## 动手步骤
-
-1. 在 `app/build.gradle.kts` 的 `dependencies` 中增加以下两行，Sync：
-
-   ```kotlin
-   implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
-   implementation("androidx.lifecycle:lifecycle-runtime-compose:2.11.0")
-   ```
-2. 新建 `TaskViewModel`，用 `MutableStateFlow(TaskUiState())` 私有保存状态，只暴露 `StateFlow<TaskUiState>`。
-3. 把 `add`、`toggle`、`delete`、`setFilter` 写成 ViewModel 方法；每次生成新的状态值。
-4. Composable 中 `val state by viewModel.uiState.collectAsStateWithLifecycle()`，把事件回调传给无状态子组件。
-5. 旋转设备，再通过系统开发者选项触发“不要保留活动”，分辨配置更改和进程恢复。
-6. 把任务行提成 `TaskRow(task, onToggle, onDelete)`；检查它不导入 ViewModel，也不知道任务数据来自内存还是数据库。
-
-## 验收
-
-- `TaskList` 不导入 ViewModel，也不持有任务列表。
-- ViewModel 的方法无需 Compose UI 就能测试。
-- 能画出：用户点击 → 回调 → ViewModel 更新 StateFlow → UI 重组。
-- 快速点击同一任务两次，最终状态正确；没有在 `TaskRow` 中留第二份完成状态。
-
-## 提示
+沿用第 7 章的 TaskModels.kt、TaskContent.kt。`app/build.gradle.kts` 的 dependencies 加入下列稳定版本；已存在时不重复添加。它们是本项目已有缓存的 2.9.4 系列，课程固定版本便于复现，升级另看官方发布页。
 
 ```kotlin
-data class TaskUiState(val tasks: List<Task> = emptyList(), val filter: Filter = Filter.All)
+implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
+implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.4")
+implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.4")
+```
+
+Sync 后新建 `TaskViewModel.kt`：
+
+```kotlin
+package dev.learning.compose
+
+import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+
+data class TaskUiState(val tasks: List<Task> = emptyList(), val filter: Int = 0)
+
 class TaskViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(TaskUiState())
-    val uiState = _uiState.asStateFlow()
-    fun add(title: String) {
-        val clean = title.trim()
-        if (clean.isEmpty()) return
-        _uiState.update { old ->
-            old.copy(tasks = old.tasks + Task(nextId(), clean))
-        }
+    private val mutableUiState = MutableStateFlow(TaskUiState())
+    val uiState = mutableUiState.asStateFlow()
+    private var nextId = 1
+
+    fun add(raw: String) {
+        val title = normalizedTitle(raw) ?: return
+        val task = Task(nextId++, title)
+        mutableUiState.update { old -> old.copy(tasks = old.tasks + task) }
+    }
+    fun toggle(id: Int) {
+        mutableUiState.update { old -> old.copy(tasks = old.tasks.map {
+            if (it.id == id) it.copy(done = !it.done) else it
+        }) }
+    }
+    fun delete(id: Int) {
+        mutableUiState.update { old -> old.copy(tasks = old.tasks.filterNot { it.id == id }) }
+    }
+    fun setFilter(filter: Int) {
+        if (filter in 0..2) mutableUiState.update { it.copy(filter = filter) }
     }
 }
 ```
 
-`nextId()` 由你实现，并保证不会产生重复 ID；这个片段只示意状态更新。需要导入 `kotlinx.coroutines.flow.update`。先保持单模块与内存数据。第 16 课才把数据迁到 Room；不要为了练架构凭空堆 Repository 接口。
+这里的调用由主线程 UI 发起，nextId 在 update lambda 外生成，避免 update 在竞争时重试导致重复副作用。并发写入、数据库 ID 在后续章扩展。
 
-## 自检
+## 4. 一步一步迁移，保持行为不变
 
-在纸上或 README 画出 3 条路径：添加成功、空标题被拒绝、删除任务。每条路径标出事件发起者、规则执行者、状态所有者和 UI 消费者。若有两处同时可修改任务列表，回到本课整理。
+先只迁移添加动作，验证空格仍不能进入。再迁移完成和删除。最后迁移 filter。每次对照第 7 章验收脚本。
 
-**变式**：把输入框内容仍放在 Composable，解释为什么它不一定要进入 ViewModel。
+在 `Exercises.kt` 加入 `androidx.lifecycle.viewmodel.compose.viewModel` 和 `androidx.lifecycle.compose.collectAsStateWithLifecycle` 导入，替换第 7 课入口：
 
-官方资料：[Compose 与 ViewModel](https://developer.android.com/develop/ui/compose/state#viewmodel-state)、[生命周期安全地收集 Flow](https://developer.android.com/develop/ui/compose/state#use-other-types-of-state-in-jetpack-compose)。
+```kotlin
+@Composable
+private fun CapstoneExercise() {
+    val model: TaskViewModel = viewModel()
+    val state by model.uiState.collectAsStateWithLifecycle()
+    var input by rememberSaveable { mutableStateOf("") }
+    TaskContent(
+        tasks = state.tasks, input = input, filter = state.filter,
+        onInput = { input = it },
+        onAdd = { if (normalizedTitle(input) != null) { model.add(input); input = "" } },
+        onFilter = model::setFilter,
+        onToggle = model::toggle,
+        onDelete = model::delete
+    )
+}
+```
+
+本课程高级章节继续修改第 7 课入口；第 8 课菜单是讲义提醒，不会自动接入你新写的类。**不要在函数体用 `TaskViewModel()` 每次手工创建实例。**
+
+## 5. 用图跟踪一次动作
+
+![第 08 课实验界面对照](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/diagrams/08-experiment.png)
+
+教学示意：点击只上报事件，ViewModel 发出新的 TaskUiState，UI 才显示新统计。TaskContent 不导入 ViewModel，可接静态数据、测试数据或别的持有者。
+
+## 6. 理解作用域，别误判生命周期
+
+此处 viewModel() 默认取得当前 ViewModelStoreOwner 的实例，课程外壳通常提供 Activity owner。所以返回课程首页后，它可能仍在；这与把状态放在练习 Composable 的 remember 不同。
+
+“不要保留活动”主要用于活动销毁实验，不能等同于进程死亡实验。要测试后者，另按第 16 章脚本执行并记录实际操作。
+
+## 7. 理解检查
+
+1. UI 不再持有 tasks，是否就不能持有 input？
+2. ViewModel 新增接口后，TaskContent 是否必须知道数据来自网络？
+3. 旋转任务还在，是否证明关机也还在？
+
+<details><summary>解析</summary>
+
+1. 可以持有。草稿的范围由需求决定，它不必与业务任务同寿命。
+2. 不需要，它只收值和回调。数据来源在上层整合。
+3. 没有。内存存活、系统恢复、磁盘持久化是不同机制。
+
+</details>
+
+## 8. 迁移任务、验收与排错
+
+独立加入 `rename(id, rawTitle)`，UI 只报告 id 与候选标题；空标题拒绝、id 不变。用普通 Kotlin 调用 ViewModel 方法检查输出，再接编辑界面。
+
+| 现象 | 检查 |
+| --- | --- |
+| 每次输入任务都被清空 | 是否每次新建 ViewModel？ |
+| UI 只看见初值 | 是否只读取 uiState.value，而没有收集为 Compose State？ |
+| 两屏任务不一致 | 两个 ViewModel 是否由不同 owner 创建？ |
+| 多处修改 tasks | 是否保留了旧 Composable 列表状态？ |
+
+验收：第 7 章所有动作仍正确，旋转仍保留，TaskContent 与业务类分离；能画出完整数据流。
+
+官方核对：[ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel)、[生命周期收集](https://developer.android.com/develop/ui/compose/state#use-other-types-of-state-in-jetpack-compose)、[Lifecycle 发布版本](https://developer.android.com/jetpack/androidx/releases/lifecycle)。
+
+---
+
+上一章：[第 07 章](07-capstone.md) · 下一章：[第 09 章](09-navigation.md)
