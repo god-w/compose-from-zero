@@ -17,7 +17,7 @@ ANDROID_OUT.mkdir(parents=True, exist_ok=True)
 
 # Each diagram tells one small story. Keep labels short enough for a phone-width preview.
 DIAGRAMS = [
-    (1, "从 View 转向 Compose", "声明当前应该显示什么", [("旧思路", "找到 TextView", "再手动改 text"), ("输入", "name = 小明", "数据先进入函数"), ("Compose", "Greeting(name)", "描述两行文字"), ("结果", "界面显示名字", "数据变了再更新")]),
+    (1, "先改一行文字", "从找到代码，到看见运行结果", [("打开文件", "Exercises.kt", "先找到练习文件"), ("找到函数", "GreetingExercise", "第 1 课修改的位置"), ("改文字", 'Text("你好！")', "先只改引号里的内容"), ("运行 app", "进入第 1 课", "查看下方的练习区")]),
     (2, "状态驱动界面", "点击事件只修改状态", [("起点", "count = 0", "界面显示 0"), ("事件", "点击 +1", "onClick 执行"), ("状态", "count = 1", "Compose 观察到变化"), ("重组", "Text 读到 1", "界面显示 1")]),
     (3, "单向数据流", "数据向下，事件向上", [("父组件", "持有 name", "唯一可信来源"), ("向下传值", "NameField(value)", "子组件只显示"), ("用户输入", "onValueChange", "子组件报告事件"), ("向上更新", "父组件改 name", "新值再次传下")]),
     (4, "布局先看树", "再看 Modifier 的作用顺序", [("外层", "Row", "头像与文字横排"), ("左侧", "头像", "固定大小"), ("右侧", "Column", "姓名和副标题竖排"), ("修饰", "padding → background", "顺序影响可见范围")]),
@@ -137,9 +137,40 @@ def android_png(number, title, subtitle, steps):
     canvas.save(ANDROID_OUT / f"lesson_{number:02d}.png", optimize=True)
 
 
+def code_to_screen():
+    """Show the exact correspondence between two Text calls and two visible lines."""
+    canvas = Image.new("RGB", (1200, 500), "#F8FAFD")
+    draw = ImageDraw.Draw(canvas)
+    font = "/System/Library/Fonts/PingFang.ttc"
+    title = ImageFont.truetype(font, 32)
+    label = ImageFont.truetype(font, 20)
+    code = ImageFont.truetype(font, 27)
+    draw.text((36, 24), "两次 Text 调用，怎样成为屏幕上的两行文字？", font=title, fill="#202735")
+    draw.rounded_rectangle((36, 100, 665, 425), radius=18, fill="#FFFFFF", outline="#CFD9E7", width=2)
+    draw.rounded_rectangle((785, 100, 1164, 425), radius=18, fill="#FFFFFF", outline="#CFD9E7", width=2)
+    draw.text((60, 117), "Exercises.kt · 函数里面", font=label, fill="#536174")
+    draw.text((810, 117), "练习区 · 排列示意", font=label, fill="#536174")
+    draw.text((65, 170), "Column {", font=code, fill="#202735")
+    for y, color, border, source, result, number in [
+        (225, "#E8F0FE", "#4E74C8", 'Text("你好，Compose！")', "你好，Compose！", "第 1 行"),
+        (305, "#E7F6EF", "#288A63", 'Text("我是小明")', "我是小明", "第 2 行"),
+    ]:
+        draw.rounded_rectangle((85, y - 8, 640, y + 42), radius=8, fill=color)
+        draw.rounded_rectangle((808, y - 8, 1140, y + 42), radius=8, fill=color)
+        draw.text((100, y), source, font=code, fill=border)
+        draw.text((825, y), result, font=code, fill=border)
+        draw.line((660, y + 15, 780, y + 15), fill=border, width=3)
+        draw.line(((769, y + 7), (780, y + 15), (769, y + 23)), fill=border, width=3)
+        draw.text((678, y - 21), number, font=label, fill=border)
+    draw.text((65, 372), "}", font=code, fill="#202735")
+    draw.text((36, 452), "Column 按代码顺序上下排列。交换两次 Text，屏幕上的顺序也会交换。", font=label, fill="#536174")
+    canvas.save(OUT / "01-code-to-screen.png", optimize=True)
+
+
 for number, title, subtitle, steps in DIAGRAMS:
     (OUT / f"{number:02d}.svg").write_text(svg(number, title, subtitle, steps), encoding="utf-8")
     png(number, title, subtitle, steps)
     android_png(number, title, subtitle, steps)
 
+code_to_screen()
 print(f"Generated {len(DIAGRAMS)} lesson diagrams for Markdown and Android")

@@ -14,15 +14,15 @@
 
 ## 再看原理图
 
-![从 View 转向 Compose 的概念图](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/diagrams/01.png)
+![第一课从定位代码到查看运行结果的图解](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/diagrams/01.png)
 
-图中从左到右是“旧思路 → 输入 → Compose → 结果”。先试着回答：如果名字改变，哪一步负责更新屏幕？再打开第 1 课写代码验证。
+第一次接触 Compose，先跟图找到 `Exercises.kt` 中的 `GreetingExercise`，只改一行文字，重新运行看结果。第一章按“改文字 → 放两行 → 传名字”逐步讲解，每一步都有完整代码和预期画面。
 
 ## 5 分钟开始
 
 1. 用 Android Studio 打开本目录，等待 Gradle Sync。需要 JDK 17、Android SDK 37 和联网下载依赖。
 2. 运行 `app` 到模拟器或真机。主页有 20 个课程入口。
-3. 在 App 首页打开第 1 课，先体验可操作示范，再回练习页点图放大：按箭头读图，先回答预测题，再看“三小步跟做”。第 1–7 课均有可操作示范。
+3. 在 App 首页打开第 1 课，先在练习区找到占位文字。第一次学习请从讲义第 1 步开始，只修改 `Text` 引号里的文字；完成后再体验示范。第 1–7 课均有可操作示范。
 4. 打开 [第 1 课讲义](lessons/01-first-composable.md)，修改 [`Exercises.kt`](app/src/main/java/dev/learning/compose/Exercises.kt) 中对应函数；每做完一小步就运行一次。
 5. 对照讲义的“停下来验收”检查结果；卡住时看“若结果不同”与提示，最后才看参考实现。
 

@@ -31,7 +31,9 @@ fun PracticeScreen(lesson: Int) {
 
 @Composable
 private fun GreetingExercise() {
-    // TODO 01: 接受 name 参数；用 Text 显示“你好，Compose！”和你的名字。
+    // 第 1 小步：只把下面引号里的内容改成“你好，Compose！”，再运行 app。
+    // 第 2 小步：读讲义，用 Column 上下排列两个 Text。
+    // 第 3 小步：再学习 name 参数；定义和调用要一起修改。
     Text("01 · 在这里写第一个 Composable")
 }
 
