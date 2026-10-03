@@ -49,7 +49,7 @@ fun PerformanceExercise() {
 }
 ```
 
-在 AdvancedExercises.kt 的 when 新增 `18 -> PerformanceExercise()`。排序 500 项通常不一定慢，此例是观察重复工作，不预先宣布它导致了卡顿。不要为了制造结论，把几秒 sleep 放在 UI 里。
+在 `AdvancedExercises.kt` 已预留的 `PerformanceExerciseEntry()` 中，把占位 `Text` 换成 `PerformanceExercise()`；`18 -> PerformanceExerciseEntry()` 分支对应第 19 课，已存在。第 17、18 课的入口应继续可打开。排序 500 项通常不一定慢，此例是观察重复工作，不预先宣布它导致了卡顿。不要为了制造结论，把几秒 sleep 放在 UI 里。
 
 ## 3. 第二步：只有一个变量变化
 

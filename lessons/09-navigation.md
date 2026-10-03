@@ -101,7 +101,7 @@ fun TaskDetail(task: Task?, onDelete: () -> Unit, onBack: () -> Unit) {
 }
 ```
 
-在 Exercises.kt 将 `CapstoneExercise` 的函数体临时替换为 `TaskNavigation()`。课程原有外层 Scaffold 保留。后续可将列表目的地换成你已有 TaskContent，并给任务标题新增 `onOpen(id)` 回调。
+新建 `TaskNavigation.kt` 后，打开 `AdvancedExercises.kt` 中已预留的 `NavigationExerciseEntry()`：把其中的占位 `Text` 换成 `TaskNavigation()`。从 App 首页进入**第 09 课**验证列表与详情；第 07 课的 `CapstoneExercise` 保持第 08 课实现，第 16 课会在那处接入 Room。课程原有外层 Scaffold 保留。后续可将列表目的地换成你已有 TaskContent，并给任务标题新增 `onOpen(id)` 回调。
 
 ### 第二步：测试数据更新，不抢先返回
 

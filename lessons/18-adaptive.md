@@ -105,7 +105,7 @@ fun AdaptiveTasks() {
 }
 ```
 
-在 AdvancedExercises.kt 新增 `17 -> AdaptiveTasks()`。先窄窗口运行，再在大屏 AVD 或可调尺寸窗口验证 wide 分支；课程外壳留白也影响可用宽度。
+在 `AdvancedExercises.kt` 已预留的 `AdaptiveExerciseEntry()` 中，把占位 `Text` 换成 `AdaptiveTasks()`；`17 -> AdaptiveExerciseEntry()` 分支对应第 18 课，已存在。不要覆盖第 17 课的入口。先窄窗口运行，再在大屏 AVD 或可调尺寸窗口验证 wide 分支；课程外壳留白也影响可用宽度。
 
 ## 4. 预测再做四种操作
 

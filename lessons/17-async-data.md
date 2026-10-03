@@ -153,7 +153,7 @@ fun AsyncTaskScreen() {
 }
 ```
 
-AdvancedExercises.kt 的 when 新增 `16 -> AsyncTaskScreen()`。代码示范小量数据的状态分支，大量结果换为 LazyColumn。首次加载可由受控入口或 LaunchedEffect 调用，不直接在函数体调用 model.load。
+在 `AdvancedExercises.kt` 已预留的 `AsyncExerciseEntry()` 中，把占位 `Text` 换成 `AsyncTaskScreen()`；`16 -> AsyncExerciseEntry()` 分支对应第 17 课，已存在，无需重写整个 `when`。从 App 首页进入第 17 课。代码示范小量数据的状态分支，大量结果换为 LazyColumn。首次加载可由受控入口或 LaunchedEffect 调用，不直接在函数体调用 model.load。
 
 ![第 17 课实验界面对照](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/diagrams/17-experiment.png)
 

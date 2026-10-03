@@ -52,3 +52,12 @@
 - 新增 7 张真实截图：检查页、上述 5 个示范页、K01 起始练习页。教学图与真实截图分别标明。
 
 检查的是教材和参考运行结果；你的练习仍保留起点，需按每章验收独立完成。未用示范的通过结果宣称学习者掌握全部 Kotlin。
+
+## 2026-10-03：进阶入口与第 10–11 课衔接复核
+
+- `AdvancedExercises.kt` 为第 09、12、17、18、19 课各保留一个独立索引和入口函数；第 09 课在自己的入口调用 `TaskNavigation()`，第 16 课仍修改第 07 课的 `CapstoneExercise`。原 app 离线 `assembleDebug` 通过。
+- 从第 07 课讲义抽取 `TaskModels` 和 `TaskContent`，按第 10 课讲义加入两个 `testTag`；把第 10 课完整 `TaskUiTest` 放在独立临时 Android 副本中，使用项目锁定的 Compose BOM、`junit4.v2.createComposeRule`、`@RunWith(AndroidJUnit4::class)` 和讲义所列依赖。`assembleDebug`、`assembleDebugAndroidTest` 通过；未添加 `@OptIn`，编译器没有提出实验性 API 要求。
+- 将临时 app 和测试 APK 安装到 Medium_Phone 模拟器，直接调用 AndroidJUnitRunner：`OK (1 test)`。该用例实际输入 `" A "`、点击添加，并通过 `task-input`/`task-summary` 标签与标题断言结果。
+- 在同一临时副本中按第 11 课把统计文案改为中英文资源，同时保留两个 `testTag`；断言改为读取当前资源，再编译并运行：`OK (1 test)`。这证明资源化后第 10 课的查找路径仍可用。
+
+上述设备结果覆盖这一条添加流程和资源化回归；不代表第 10 课建议学员独立编写的全部测试，或第 11 课的 TalkBack、大字号和所有语言验收已经完成。第 09、17–19 课当前入口仍是练习占位，具体功能由对应讲义引导实现。

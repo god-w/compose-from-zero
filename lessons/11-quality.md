@@ -113,7 +113,17 @@ fun LongTaskPreview() {
 
 ```kotlin
 val summary = stringResource(R.string.task_summary, tasks.count { it.done }, tasks.size)
-Text(summary)
+Text(summary, modifier = Modifier.testTag("task-summary"))
+```
+
+这里替换第 10 课的统计文字时必须保留 `Modifier.testTag("task-summary")`；输入框的 `Modifier.fillMaxWidth().testTag("task-input")` 也继续保留。改完后重新运行第 10 课的 UI 测试，确认它仍能按这两个标签找到节点。
+
+第 10 课断言使用固定中文；在本章接入英文资源后，把断言改为读取当前测试设备的资源，避免切换语言时误报。先导入 `androidx.test.platform.app.InstrumentationRegistry`，将原来的统计断言替换为：
+
+```kotlin
+val context = InstrumentationRegistry.getInstrumentation().targetContext
+val expected = context.getString(R.string.task_summary, 0, 1)
+compose.onNodeWithTag("task-summary").assertTextEquals(expected)
 ```
 
 semantics lambda 不是 Composable 上下文，先在外面计算 `val deleteLabel = stringResource(R.string.delete_task, task.title)`，再在 lambda 设置 description。不要在里面直接调用 stringResource。

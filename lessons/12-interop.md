@@ -54,7 +54,7 @@ fun InteropExercise() {
 }
 ```
 
-在 AdvancedExercises.kt 的 when 新增 `11 -> InteropExercise()`，位于 else 前，进入第 12 课。**这里只是新的实验入口，不要修改主 Activity 的 Compose 外壳。**
+在 `AdvancedExercises.kt` 已预留的 `InteropExerciseEntry()` 中，把占位 `Text` 换成 `InteropExercise()`；第 12 课的 `11 -> InteropExerciseEntry()` 分支已经存在。只替换这一处函数体内容，再从 App 首页进入第 12 课。
 
 先预测再点击：两处都更新，因为它们读取同一个 count。factory 负责创建，update 负责应用当前数据，update 可以多次发生。
 

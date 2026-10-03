@@ -60,10 +60,19 @@ dependencies 使用已有 composeBom 变量：
 androidTestImplementation(composeBom)
 androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 androidTestImplementation("androidx.test:runner:1.6.2")
+androidTestImplementation("androidx.test.ext:junit:1.1.5")
 debugImplementation("androidx.compose.ui:ui-test-manifest")
 ```
 
-这是固定的可复现 runner 版本；升级需查看发布页。启动模拟器，再运行 connectedDebugAndroidTest。
+这是固定的可复现 runner 版本；升级需查看发布页。启动模拟器，再运行 `./gradlew :app:connectedDebugAndroidTest`。若本机 Gradle 测试任务因测试平台工具未下载而停止，先用 `./gradlew :app:assembleDebug :app:assembleDebugAndroidTest` 编译两份 APK，再使用已连接的设备直接运行同一条测试：
+
+```bash
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+adb shell am instrument -w dev.learning.compose.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+只看到 APK 编译成功不能算设备测试通过；最后应出现 `OK (1 test)`，失败时先看测试异常与对应断言。上述命令使用课程原 applicationId；如果自己改了 applicationId，测试包名也会随之改变。
 
 ## 4. 查找控件：先语义，再标签
 
@@ -92,9 +101,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 
+@RunWith(AndroidJUnit4::class)
 class TaskUiTest {
     @get:Rule val compose = createComposeRule()
 
@@ -120,7 +132,7 @@ class TaskUiTest {
 }
 ```
 
-这是添加行为的独立测试，不声称覆盖 ViewModel。第 8 章规则可再用单元测试调用 model.add，形成另一层检查。
+这里的 `@RunWith` 明确让 AndroidX 的 JUnit 4 runner 执行测试。当前课程锁定的 Compose UI Test v2 `createComposeRule()` 无需 `@OptIn`；若以后升级版本并收到编译器的实验性 API 提示，再按**该版本的准确注解类型**添加。当前版本的包迁移可核对 [Android 官方 v2 测试迁移说明](https://developer.android.com/develop/ui/compose/testing/migrate-v2)。只有编译成功不算跑通，还要在设备上看到测试通过。测试添加行为，不声称覆盖 ViewModel。第 8 章规则可再用单元测试调用 model.add，形成另一层检查。
 
 ## 6. 故意制造一次失败
 
