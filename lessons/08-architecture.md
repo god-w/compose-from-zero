@@ -1,5 +1,7 @@
 # 08 · ViewModel 与 StateFlow：让界面只负责呈现
 
+> **Kotlin 前置回查：** [K06 类、属性与数据类](kotlin/K06-classes.md) · [K08 密封类型与状态建模](kotlin/K08-sealed-state.md) · [K09 泛型与类型边界](kotlin/K09-generics.md) · [K12 Flow 与 StateFlow](kotlin/K12-flow.md)。语法卡住时先做对应小步练习，再继续本章。
+
 **本章目标：**沿用第 7 章 Task 与 TaskContent，将屏幕业务规则迁入 ViewModel。
 
 **学习顺序：**先理解原理和数据来源，再预测实验结果；每完成一个小步就运行一次，最后遮住解析完成验收。进阶章节列出的依赖只在学到该章时添加，现有课程 app 可以先正常运行。

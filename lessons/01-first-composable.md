@@ -1,5 +1,7 @@
 # 01 · Kotlin 函数为什么能变成界面？
 
+> **Kotlin 前置回查：** [K01 值、类型与字符串](kotlin/K01-values.md) · [K02 函数与控制流程](kotlin/K02-functions.md) · [K04 函数类型与 lambda](kotlin/K04-lambdas.md) · [K13 注解与 Java 互操作](kotlin/K13-interop.md)。语法卡住时先做对应小步练习，再继续本章。
+
 你已经会 Android 和 Kotlin。这一章从你熟悉的 `Activity → XML → View` 出发，把 Compose 接到已有知识上。
 
 **本章目标：**能说清楚谁调用界面函数、`@Composable` 做什么、`Column` 和 `Text` 如何协作；然后独立写出一个接收名字的问候区域。暂时不涉及状态、点击事件和编译器源码。

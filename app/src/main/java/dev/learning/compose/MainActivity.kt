@@ -65,23 +65,28 @@ class MainActivity : ComponentActivity() {
 private fun Workshop() {
     var selected by rememberSaveable { mutableIntStateOf(-1) }
     var showingShowcase by rememberSaveable { mutableStateOf(false) }
-    BackHandler(selected >= 0) {
+    var showingKotlin by rememberSaveable { mutableStateOf(false) }
+    BackHandler(showingKotlin || selected >= 0) {
+        if (showingKotlin) { showingKotlin = false; return@BackHandler }
         if (showingShowcase) showingShowcase = false else selected = -1
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (showingShowcase) "${"%02d".format(selected + 1)} · 可操作示范" else if (selected < 0) "Compose 从零开始" else lessons[selected].first) },
+                title = { Text(if (showingKotlin) "Kotlin 学习" else if (showingShowcase) "${"%02d".format(selected + 1)} · 可操作示范" else if (selected < 0) "Compose 从零开始" else lessons[selected].first) },
                 navigationIcon = {
-                    if (selected >= 0) TextButton(onClick = {
+                    if (showingKotlin || selected >= 0) TextButton(onClick = {
+                        if (showingKotlin) { showingKotlin = false; return@TextButton }
                         if (showingShowcase) showingShowcase = false else selected = -1
                     }) { Text("返回") }
                 }
             )
         }
     ) { padding ->
-        if (selected < 0) {
+        if (showingKotlin) {
+            KotlinLab(Modifier.fillMaxSize().padding(padding))
+        } else if (selected < 0) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding),
                 contentPadding = PaddingValues(16.dp),
@@ -89,6 +94,14 @@ private fun Workshop() {
             ) {
                 item {
                     Text("第 1 课先读讲义理解调用链，再修改 Exercises.kt。第 2–7 课可先体验示范；进阶课围绕阶段项目扩展。", style = MaterialTheme.typography.bodyLarge)
+                }
+                item {
+                    Card(Modifier.fillMaxWidth().clickable { showingKotlin = true }) {
+                        Column(Modifier.padding(20.dp)) {
+                            Text("Kotlin 从基础到 Compose · 14 章", style = MaterialTheme.typography.titleMedium)
+                            Text("预测输出 → 运行示范 → 自己写 → 解释与迁移")
+                        }
+                    }
                 }
                 itemsIndexed(lessons) { index, lesson ->
                     Card(modifier = Modifier.fillMaxWidth().clickable {

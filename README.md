@@ -1,6 +1,6 @@
 # Compose 从零到进阶实战
 
-面向**已经会 Android/Kotlin，但没写过 Jetpack Compose** 的开发者。这里不是一组只供阅读的示例：`app` 是可运行的练习场，`Exercises.kt` 是你亲手修改的文件，`lessons/` 是按顺序完成的讲义。
+面向**有 Android 基础、没写过 Jetpack Compose** 的开发者；Kotlin 不熟悉也可以从新增的语言路线开始。这里不是一组只供阅读的示例：`app` 是可运行的练习场，`Exercises.kt` 是你亲手修改的文件，`lessons/` 是按顺序完成的讲义。
 
 ## 先看看会做出什么
 
@@ -21,7 +21,7 @@
 ## 5 分钟开始
 
 1. 用 Android Studio 打开本目录，等待 Gradle Sync。需要 JDK 17、Android SDK 37 和联网下载依赖。
-2. 运行 `app` 到模拟器或真机。主页有 20 个课程入口。
+2. 运行 `app` 到模拟器或真机。主页有 20 个 Compose 课程入口，以及 14 章 Kotlin 学习入口。
 3. 在 App 首页打开第 1 课，在练习区找到占位文字。阅读第一章 1–6 节，用 XML/View 对照理解原理；再按第 7 节动手实验。完成静态练习后再体验示范中的按钮。第 1–7 课均有可操作示范。
 4. 打开 [第 1 课讲义](lessons/01-first-composable.md)，修改 [`Exercises.kt`](app/src/main/java/dev/learning/compose/Exercises.kt) 中对应函数；每做完一小步就运行一次。
 5. 完成讲义中的验收；第 1 课还要解释调用链并做迁移题。卡住时按现象回读对应小节，先自己作答，再展开解析。
@@ -31,6 +31,16 @@
 每节讲义都配有**目标界面示意图 + 原理流程图**：先看完成后会是什么样，再按问题写代码。目标图在 `assets/effects/`，原理图在 `assets/diagrams/`；App 内也能点击放大原理图。当前 Android Studio 的实验性 Compose Markdown 预览无法解析相对图片路径，因此讲义使用 GitHub 图片地址，在线阅读和 IDE 预览都能显示。若需离线预览，运行 `python3 tools/refresh_markdown_image_paths.py` 改为本机图片路径；上传改动前请运行 `python3 tools/refresh_markdown_image_paths.py --github` 恢复 GitHub 图片地址。
 
 第 1–7 课还有**真正运行的示范页**，可以输入、点击、旋转并验证预测。示范代码与 `Exercises.kt` 分开，你的练习不会被答案覆盖。第 1 课先建立静态界面的理解；第 2–7 课建议先体验行为，再回讲义逐步写，完成验收后才读示范源码。
+
+## 先补 Kotlin，再学 Compose
+
+新增 [Kotlin 学习路线](lessons/kotlin/README.md)：14 章从值与类型开始，逐步讲到 lambda、接收者、数据类、集合、密封状态、泛型、委托、协程、Flow、Java 互操作与任务规则。
+
+![K01 值与类型的教学对照图](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/kotlin/K01.png)
+
+![Kotlin 学习页的真实模拟器运行截图](https://raw.githubusercontent.com/god-w/compose-from-zero/main/assets/kotlin/K01-running.png)
+
+每章包含图解、预测题、分步改代码、答案解析、排错表、变式与验收。App 首页点击“Kotlin 从基础到 Compose”，可以运行示范与自己的练习；修改 [KotlinExercises.kt](app/src/main/java/dev/learning/compose/KotlinExercises.kt) 后重新 Run app。示范独立保存，不覆盖练习。建议先读 K01–05 再开始 Compose；已有 Compose 讲义也增加对应的 Kotlin 前置链接。
 
 ## 学习路线
 

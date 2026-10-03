@@ -1,5 +1,7 @@
 # 20 · 毕业项目：独立交付习惯打卡应用
 
+> **Kotlin 前置回查：** [K06 类、属性与数据类](kotlin/K06-classes.md) · [K07 集合与不可变更新](kotlin/K07-collections.md) · [K08 密封类型与状态建模](kotlin/K08-sealed-state.md) · [K11 协程与取消](kotlin/K11-coroutines.md) · [K12 Flow 与 StateFlow](kotlin/K12-flow.md) · [K14 综合练习：纯 Kotlin 任务规则](kotlin/K14-integration.md)。语法卡住时先做对应小步练习，再继续本章。
+
 **本章目标：**把所有章节迁移到新问题，留下功能、恢复、质量和性能证据，而不是复制任务清单。
 
 **学习顺序：**先理解原理和数据来源，再预测实验结果；每完成一个小步就运行一次，最后遮住解析完成验收。进阶章节列出的依赖只在学到该章时添加，现有课程 app 可以先正常运行。

@@ -1,0 +1,170 @@
+[
+  {
+    "id": "K01",
+    "title": "值、类型与字符串",
+    "lines": [
+      "val name = \"小明\"",
+      "var count = 0",
+      "count += 3",
+      "5 / 10 → 0",
+      "5.toDouble() / 10 → 0.5"
+    ],
+    "output": "小明：3；比例=0.5"
+  },
+  {
+    "id": "K02",
+    "title": "函数与控制流程",
+    "lines": [
+      "fun greet(name: String,",
+      "  prefix: String = \"你好\")",
+      "  = \"$prefix，$name\"",
+      "greet(name = \"小明\")",
+      "输出：你好，小明；总和=6"
+    ],
+    "output": "你好，小明；总和=6"
+  },
+  {
+    "id": "K03",
+    "title": "可空类型与安全输入",
+    "lines": [
+      "raw: String?",
+      "null → ?.trim() → null",
+      "\"   \" → trim() → \"\"",
+      "takeIf：空串 → null",
+      "?: \"匿名\" → 匿名"
+    ],
+    "output": "匿名；42"
+  },
+  {
+    "id": "K04",
+    "title": "函数类型与 lambda",
+    "lines": [
+      "action: (Int) -> Int",
+      "{ number -> number * 2 }",
+      "传入：applyOperation(3) { … }",
+      "执行：action(3)",
+      "result = 6；calls = 1"
+    ],
+    "output": "结果=6；调用=1"
+  },
+  {
+    "id": "K05",
+    "title": "接收者、扩展与作用域函数",
+    "lines": [
+      "\" a \".cleanTitle() → \"A\"",
+      "title.let { it.length } → 1",
+      "title.also { it.length } → \"A\"",
+      "builder.apply { append(\"A\") }",
+      "apply 返回 builder；this 是 builder"
+    ],
+    "output": "标题=A；长度=1"
+  },
+  {
+    "id": "K06",
+    "title": "类、属性与数据类",
+    "lines": [
+      "original ─→ done=false",
+      "copy ─→ done=true",
+      "original.tags 与 copy.tags",
+      "指向同一 MutableList",
+      "copy() 不递归复制标签"
+    ],
+    "output": "原来=false；副本=true；共享标签=true"
+  },
+  {
+    "id": "K07",
+    "title": "集合与不可变更新",
+    "lines": [
+      "源 tasks：[A✓, B□]",
+      "filterNot { it.done } → [B□]",
+      "map { it.title } → [B]",
+      "tasks.count { it.done } → 1",
+      "源列表仍然包含 A 和 B"
+    ],
+    "output": "未完成=[B]；完成=1"
+  },
+  {
+    "id": "K08",
+    "title": "密封类型与状态建模",
+    "lines": [
+      "KotlinLoad：一个当前状态",
+      "Loading：没有附加数据",
+      "Success(count)：成功数量",
+      "Error(message)：失败原因",
+      "when：每一种都要处理"
+    ],
+    "output": "加载中 / 共 2 项 / 失败：断网"
+  },
+  {
+    "id": "K09",
+    "title": "泛型与类型边界",
+    "lines": [
+      "List<String> → T = String",
+      "kotlinFirst(...) → String?",
+      "List<Int> → T = Int",
+      "kotlinFirst(...) → Int?",
+      "reified Int：找到 7"
+    ],
+    "output": "首项=A；首个数字=7"
+  },
+  {
+    "id": "K10",
+    "title": "委托属性与 by",
+    "lines": [
+      "score = 99",
+      "↓ setValue(..., 99)",
+      "保存 coerceIn(0, 10) → 10",
+      "读取 score → getValue → 10",
+      "lazy 两次读取，初始化一次"
+    ],
+    "output": "分数=10；初始化=1"
+  },
+  {
+    "id": "K11",
+    "title": "协程与取消",
+    "lines": [
+      "父 coroutineScope",
+      "async A：delay → \"A\"",
+      "async B：delay → \"B\"",
+      "await A + await B → A+B",
+      "job.cancelAndJoin() → cancelled"
+    ],
+    "output": "A+B；cancelled=true"
+  },
+  {
+    "id": "K12",
+    "title": "Flow 与 StateFlow",
+    "lines": [
+      "flow { starts++; emit(1); emit(2) }",
+      "创建：starts = 0",
+      "收集 1 → [10,20]，starts=1",
+      "收集 2 → [10,20]，starts=2",
+      "StateFlow.value：当前值 1"
+    ],
+    "output": "[10, 20] / [10, 20]；启动=2；state=1"
+  },
+  {
+    "id": "K13",
+    "title": "注解与 Java 互操作",
+    "lines": [
+      "Java：String optionalName(false)",
+      "实际返回：null",
+      "Kotlin：val name: String? = …",
+      "name ?: \"匿名\" → 匿名",
+      "@JvmStatic：为 Java 提供桥接"
+    ],
+    "output": "匿名；你好，小明"
+  },
+  {
+    "id": "K14",
+    "title": "综合练习：纯 Kotlin 任务规则",
+    "lines": [
+      "初始 []；nextId=1",
+      "Add A、B → [1:A□, 2:B□]",
+      "Toggle 1 → [1:A✓, 2:B□]",
+      "Delete 2 → [1:A✓]",
+      "nextId=3；旧状态不修改"
+    ],
+    "output": "A：完成；总数=1；下一ID=3"
+  }
+]

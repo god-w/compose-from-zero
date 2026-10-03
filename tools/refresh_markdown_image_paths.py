@@ -26,7 +26,7 @@ def replace_asset(match):
     return f'![{label}]({url})'
 
 
-for document in [root / 'README.md', *sorted((root / 'lessons').glob('*.md'))]:
+for document in [root / 'README.md', *sorted((root / 'lessons').rglob('*.md'))]:
     text = document.read_text(encoding='utf-8')
     text = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', replace_asset, text)
     document.write_text(text, encoding='utf-8')
